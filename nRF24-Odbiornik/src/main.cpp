@@ -14,8 +14,8 @@
 #define OUTPIN2 17    //  kosz prawy
 #define OUTPIN3 18    //  podloga lewy
 #define OUTPIN4 19    //  podloga prawy
-#define OUTPIN5 0     //  wolne
-#define OUTPIN6 1     //  wolne
+#define OUTPIN5 0     //  wolne/RX
+#define OUTPIN6 1     //  wolne/TX
 #define OUTPIN7 2     //  wolne
 #define OUTPIN8 3     //  wolne
 
@@ -52,8 +52,8 @@ void read_input_pins()
     digitalWriteFast(OUTPIN2, LOW);
     digitalWriteFast(OUTPIN3, LOW);
     digitalWriteFast(OUTPIN4, LOW);
-    digitalWriteFast(OUTPIN5, LOW);
-    digitalWriteFast(OUTPIN6, LOW);
+    //digitalWriteFast(OUTPIN5, LOW); // RX
+    //digitalWriteFast(OUTPIN6, LOW); // TX
     digitalWriteFast(OUTPIN7, LOW);
     digitalWriteFast(OUTPIN8, LOW);
   }
@@ -64,7 +64,7 @@ void read_input_pins()
 void setup() 
 {
   Serial.begin(115200);
-  
+
   // PINS
   pinModeFast(INPIN1, INPUT_PULLUP);
   pinModeFast(INPIN2, INPUT_PULLUP);
@@ -75,16 +75,16 @@ void setup()
   pinModeFast(OUTPIN2, OUTPUT);
   pinModeFast(OUTPIN3, OUTPUT);
   pinModeFast(OUTPIN4, OUTPUT);
-  pinModeFast(OUTPIN5, OUTPUT);
-  pinModeFast(OUTPIN6, OUTPUT);
+  //pinModeFast(OUTPIN5, OUTPUT);
+  //pinModeFast(OUTPIN6, OUTPUT);
   pinModeFast(OUTPIN7, OUTPUT);
   pinModeFast(OUTPIN8, OUTPUT);
   digitalWriteFast(OUTPIN1, HIGH);
   digitalWriteFast(OUTPIN2, HIGH);
   digitalWriteFast(OUTPIN3, HIGH);
   digitalWriteFast(OUTPIN4, HIGH);
-  digitalWriteFast(OUTPIN5, HIGH);
-  digitalWriteFast(OUTPIN6, HIGH);
+  //digitalWriteFast(OUTPIN5, HIGH);
+  //digitalWriteFast(OUTPIN6, HIGH);
   digitalWriteFast(OUTPIN7, HIGH);
   digitalWriteFast(OUTPIN8, HIGH);
 
@@ -94,6 +94,8 @@ void setup()
   radio.setPALevel(RF24_PA_LOW);
   radio.startListening();
   pinMode(10, OUTPUT);
+
+  Serial.println("SETUP:OK");
 }
 
 void loop() {
@@ -102,13 +104,13 @@ void loop() {
     radio.read(&bme_data, sizeof(bme_data));
     Serial.print("Odebrano:");
     Serial.println(bme_data);
-    digitalWriteFast(OUTPIN1, LOW);
+    //digitalWriteFast(OUTPIN1, LOW);
   }
   else
   {
     Serial.println("nRF:nyc");
+    delay(500);
   }
-
-  read_input_pins();
+  //read_input_pins();
 
 }
