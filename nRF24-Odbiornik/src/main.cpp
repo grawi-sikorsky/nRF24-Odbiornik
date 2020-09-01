@@ -160,11 +160,16 @@ void manage_input()
 
 void manage_output()
 {
-  outputCurrentTime = millis();
+  outputCurrentTime = millis(); // pobierz czas
 
-  if(outputCurrentTime - prevOutputTime >= OUTPUT_TIME)
+  if(outputCurrentTime - prevOutputTime >= OUTPUT_TIME) // jesli minie czas OUTPUT_TIME = 4s
   {
-    prevOutputTime = outputCurrentTime;
+    prevOutputTime = outputCurrentTime; // zeruj licznik
+
+    for(int i=0; i <= outpin_array_len-1; i++)  // wylacza wszystkie wyjscia jednoczesnie.. [todo: zrobic osobne timery dla kazdego wyjscia..]
+    {
+      outPin_active[i] = false;
+    }
   }
 
   for(int i=0; i <= outpin_array_len-1; i++)
@@ -174,6 +179,10 @@ void manage_output()
       digitalWriteFast(outpin[i], LOW);
       Serial.print("for:out");
       Serial.println(outpin[i]);
+    }
+    else // outpin == false
+    {
+      digitalWriteFast(outpin[i], HIGH);
     }
   }
 }
