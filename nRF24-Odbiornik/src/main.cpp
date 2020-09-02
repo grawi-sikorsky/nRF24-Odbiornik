@@ -185,8 +185,6 @@ void manage_output()
     if(outPin_active[i] == true)
     {
       digitalWriteFast(outpin[i], LOW);
-      //Serial.print("for:out");
-      //Serial.println(outpin[i]);
 
       // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
       // JESLI TAK WYLACZA WYJSCIE
@@ -261,7 +259,7 @@ void manage_pressure()
   // START ODBIORU I USREDNIANIE DANYCH
   if(bme_avg_i < BME_AVG_COUNT)
   {
-    if(bme_data < bme_data+BME_AVG_DIFF || bme_data > bme_data - BME_AVG_DIFF)  // jesli miesci sie w widelkach +-200 bme
+    if(bme_data < (bme_avg + BME_AVG_DIFF) && bme_data > (bme_avg - BME_AVG_DIFF))  // jesli miesci sie w widelkach +-200 bme
     {
       bme_tbl[bme_avg_i] = bme_data;  // dodaj nowa wartosc do tabeli
       bme_avg_i++;                    // zwieksz licznik
@@ -293,7 +291,25 @@ void manage_pressure()
 
 void check_pressure()
 {
-
+  if(bme_data > (bme_avg + BME_AVG_DIFF))             // JESLI CISNIENIE JEST WYZSZE OD AVG + AVG_DIFF
+  {
+    Serial.print("GWIZD"); Serial.println(bme_data);
+    outPin_active[0] = true;
+    outPin_active[1] = true;
+    outPin_active[2] = true;
+    outPin_active[3] = true;
+    prevOutputTime[0] = millis();
+    prevOutputTime[1] = millis();
+    prevOutputTime[2] = millis();
+    prevOutputTime[3] = millis();
+  }
+  else if(bme_data < (bme_avg + BME_AVG_DIFF) && bme_data > (bme_avg - BME_AVG_DIFF))   // JESLI CISNIENIE WRACA DO WIDELEK +- AVG_DIFF
+  {
+    outPin_active[0] = false;
+    outPin_active[1] = false;
+    outPin_active[2] = false;
+    outPin_active[3] = false;
+  }
 }
 
 void setup() 
@@ -348,6 +364,7 @@ void loop() {
     Serial.println(bme_data);
     
     manage_pressure();
+    check_pressure();
 
     // START COUNT INACTIVE TIME
     rfoffTime = millis();
