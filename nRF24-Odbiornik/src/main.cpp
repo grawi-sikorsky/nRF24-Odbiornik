@@ -68,6 +68,7 @@ float bme_avg = 0;
 int   bme_avg_i = 0;
 bool  bme_rozbieg = true;
 #define BME_AVG_COUNT 25
+#define BME_AVG_DIFF  200
 
 
 // Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
@@ -260,8 +261,11 @@ void manage_pressure()
   // START ODBIORU I USREDNIANIE DANYCH
   if(bme_avg_i < BME_AVG_COUNT)
   {
-    bme_tbl[bme_avg_i] = bme_data;  // dodaj nowa wartosc do tabeli
-    bme_avg_i++;                    // zwieksz licznik
+    if(bme_data < bme_data+BME_AVG_DIFF || bme_data > bme_data - BME_AVG_DIFF)  // jesli miesci sie w widelkach +-200 bme
+    {
+      bme_tbl[bme_avg_i] = bme_data;  // dodaj nowa wartosc do tabeli
+      bme_avg_i++;                    // zwieksz licznik
+    }
   }
   else
   {
