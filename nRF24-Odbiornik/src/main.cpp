@@ -44,6 +44,7 @@ const int outpin_array_len = (sizeof(outpin)/sizeof(*outpin));  // DLUGOSC TABLI
 #endif
 
 #define READ_REFRESH_TIME 100
+#define RF_OFF_TIME 5000
 
 bool inPin1_State, inPin1_prev_State,
     inPin2_State, inPin2_prev_State,
@@ -57,16 +58,16 @@ const byte address[17] = "1100110011001100";  // adres nadajnika [todo: zrobic t
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME
-time_t currentTime, prevTime = 0;
-time_t outputCurrentTime, prevOutputTime[outpin_array_len];
-
+time_t currentTime, prevTime = 0;                             // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
+time_t outputCurrentTime, prevOutputTime[outpin_array_len];   // TIMER WYJSC OUTPUT - OUTPUT_TIME - 8000 ms
+time_t rfoffTime;                                             // TIMER LICZACY CZAS OD OSTATNIEGO ODBIORU DANYCH Z nRF (potrzebny m.in do pozniejszego rozbiegu sredniej)
 // PRESSURE DEFINICJE
 float bme_data;             // dane RAW prosto z nadajnika
 float bme_tbl[100];        // dane RAW usrednione do 100 probek
 float bme_avg = 0;
 int   bme_avg_i = 0;
 bool  bme_rozbieg = true;
-#define BME_AVG_COUNT 50
+#define BME_AVG_COUNT 25
 
 
 // Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
@@ -202,12 +203,19 @@ void manage_output()
   }
 }
 
-// ODBIOR DANYCH Z NADAJNIKA I USREDNIENIE WYNIKU DO DALSZYCH DZIALAN
-// URUCHAMIANE TYLKO KIEDY NADAJNIK ODBIERA BME
-void manage_pressure()
+void pressure_prepare()
 {
-  bme_data = 100;
   // START ODBIORU I USREDNIANIE DANYCH
+  for(int i=0; i < BME_AVG_COUNT; i++) // w rozbiegu usredniaj wraz z rosnacym licznikiem i.
+  {
+    bme_tbl[i] = bme_data;          // przypisz dane z nadajnika x AVG COUNT
+    bme_avg += bme_tbl[i];          // dodaj do sredniej wartosc z tablicy[i]
+  }
+  bme_avg = bme_avg / BME_AVG_COUNT;  // dzielimy przez ilosc zapisanych wartosci w tablicy
+  bme_rozbieg = false;
+  bme_avg_i = 0;
+
+  /*
   if( bme_rozbieg == true )
   {
     if (bme_avg_i < BME_AVG_COUNT)  // dopoki wartosc dobije 100 probek
@@ -235,33 +243,45 @@ void manage_pressure()
     unsigned long delta = end - start;
     Serial.println(delta);
   }
-  else if ( bme_rozbieg == false )    // rozbieg == false - tablica pelna, pracuje normalnie
+  */
+}
+
+// ODBIOR DANYCH Z NADAJNIKA I USREDNIENIE WYNIKU DO DALSZYCH DZIALAN
+// URUCHAMIANE TYLKO KIEDY NADAJNIK ODBIERA BME
+void manage_pressure()
+{
+  // ROZBIEG TABLICY SREDNIEGO CISNIENIA
+  if(bme_rozbieg == true)
   {
-    if(bme_avg_i < BME_AVG_COUNT)
-    {
-      bme_tbl[bme_avg_i] = bme_data;  // dodaj nowa wartosc do tabeli
-      bme_avg_i++;                    // zwieksz licznik
-    }
-    else
-    {
-      bme_avg_i = 0;
-    }
-
-    unsigned long start = micros();
-    // Call to your function
-
-    bme_avg = 0;
-    for(int i=0; i <= BME_AVG_COUNT; i++) // w rozbiegu usredniaj wraz z rosnacym licznikiem i.
-    {
-      bme_avg += bme_tbl[i];          // dodaj do sredniej wartosc z tablicy[i]
-    }
-    bme_avg = bme_avg / BME_AVG_COUNT;    // dzielimy przez ilosc zapisanych wartosci w tablicy
-
-    // Compute the time it took
-    unsigned long end = micros();
-    unsigned long delta = end - start;
-    Serial.println(delta);
+    pressure_prepare();
+    Serial.println("pressure prepare");
   }
+
+  // START ODBIORU I USREDNIANIE DANYCH
+  if(bme_avg_i < BME_AVG_COUNT)
+  {
+    bme_tbl[bme_avg_i] = bme_data;  // dodaj nowa wartosc do tabeli
+    bme_avg_i++;                    // zwieksz licznik
+  }
+  else
+  {
+    bme_avg_i = 0;
+  }
+
+  unsigned long start = micros();
+  // Call to your function
+
+  bme_avg = 0;
+  for(int i=0; i <= BME_AVG_COUNT; i++) // w rozbiegu usredniaj wraz z rosnacym licznikiem i.
+  {
+    bme_avg += bme_tbl[i];          // dodaj do sredniej wartosc z tablicy[i]
+  }
+  bme_avg = bme_avg / BME_AVG_COUNT;    // dzielimy przez ilosc zapisanych wartosci w tablicy
+
+  // Compute the time it took
+  unsigned long end = micros();
+  unsigned long delta = end - start;
+  Serial.println(delta);
 
   Serial.print("bme avg i: "); Serial.println(bme_avg_i);
   Serial.print("bme avg: "); Serial.println(bme_avg);
@@ -322,9 +342,21 @@ void loop() {
     radio.read(&bme_data, sizeof(bme_data));
     Serial.print("Odebrano:");
     Serial.println(bme_data);
-    // TODO BLA BLA BLA
+    
     manage_pressure();
+
+    // START COUNT INACTIVE TIME
+    rfoffTime = millis();
   }
+  else
+  {
+    if(millis() - rfoffTime >= RF_OFF_TIME && bme_rozbieg == false)
+    {
+      Serial.println("bmerozbieg true");
+      bme_rozbieg = true;
+    }
+  }
+  
 
   // 2. SPRAWDZ WEJSCIA IN1-IN4:
   currentTime = millis();
