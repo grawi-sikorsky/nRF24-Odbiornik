@@ -30,7 +30,7 @@ const int outpin_array_len = (sizeof(outpin)/sizeof(*outpin));  // DLUGOSC TABLI
 
 
 // KONFIGURACJA
-//#define DEBUG                   // DEBUG, SERIAL itp.
+#define DEBUG                   // DEBUG, SERIAL itp.
 #define OUTPUT_TIME 8000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
 #define RF_OFF_TIME 5000        // czas [ms] nieaktywnosci nadajnika po ktorym trzeba ponownie wygenerowac tablice probek cisnienia
