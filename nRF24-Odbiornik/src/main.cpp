@@ -40,6 +40,7 @@ bool inPin1_State, inPin1_prev_State,
     inPin3_State, inPin3_prev_State,
     inPin4_State, inPin4_prev_State;
 bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
+bool input_active;
 
 // nRF24L01 DEFINICJE
 const byte address[17] = "1100110011001100";  // adres nadajnika [todo: zrobic to bezpieczniejsze]
@@ -129,10 +130,14 @@ void check_pressure()
 
     gwizd_on = true;                                  // ustaw gwizdek aktywny
 
-    for(int i=0; i <= outpin_array_len-1; i++)        // na chwile wyzeruj wszystkie wyjscia -> migniecie gdyby wyjscia byly juz aktywne sygnalem z WEJSC.
+    if(input_active == true)                          // jesli OUTPUT byl zaswiecony przez wejscia INPUT
     {
-      outPin_active[i] = false;                       // wszystkie flagi off
-      digitalWriteFast(outpin[i], HIGH);              // wszystkie piny off
+      for(int i=0; i <= outpin_array_len-1; i++)        // na chwile wyzeruj wszystkie wyjscia -> migniecie gdyby wyjscia byly juz aktywne sygnalem z WEJSC.
+      {
+        outPin_active[i] = false;                       // wszystkie flagi off
+        digitalWriteFast(outpin[i], HIGH);              // wszystkie piny off
+      }
+      input_active = false;                            // Zapomnij o INPUTach
     }
 
     outPin_active[0] = true;                          // ustaw konkretne wyjscia aktywne po gwizdnieciu [do konfiguracji]
@@ -192,6 +197,7 @@ void manage_input()
         outPin_active[2] = true;
         prevOutputTime[0] = millis();
         prevOutputTime[2] = millis();
+        input_active = true;
       }
       else                                                    // zmiana na HIGH
       {
@@ -213,6 +219,7 @@ void manage_input()
         outPin_active[2] = true;
         prevOutputTime[0] = millis();
         prevOutputTime[2] = millis();
+        input_active = true;
       }
       else  // zmiana na HIGH
       {
@@ -234,6 +241,7 @@ void manage_input()
         outPin_active[3] = true;
         prevOutputTime[1] = millis();
         prevOutputTime[3] = millis();
+        input_active = true;
       }
       else  // zmiana na HIGH
       {
@@ -255,6 +263,7 @@ void manage_input()
         outPin_active[3] = true;
         prevOutputTime[1] = millis();
         prevOutputTime[3] = millis();
+        input_active = true;
       }
       else  // zmiana na HIGH
       {
@@ -289,6 +298,7 @@ void manage_output()
       {
         prevOutputTime[i] = outputCurrentTime; // zeruj licznik
         outPin_active[i] = false; // flaga output na false
+        input_active = false;     // info o wejsciu
       }
     }
     else if(outPin_active[i] == false && gwizd_on == false) // outpin == false
