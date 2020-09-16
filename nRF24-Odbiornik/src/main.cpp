@@ -46,7 +46,7 @@ bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
 bool input_active;
 
 // nRF24L01 DEFINICJE
-const byte address[17] = "1100110011001100";  // adres nadajnika [todo: zrobic to bezpieczniejsze]
+const byte address[12] = "Uodbiurnik1";  // domyslny adres odbiornika
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME CZASOMIERZE
@@ -64,11 +64,8 @@ time_t timeout_start_at;                                      // TIMER LICZACY C
 
 struct outdata
 {
-  float bme_data;   // cisnienie z nadajnika
-  int   i_get;      // licznik z nadajnika
-  bool  slowtime;   // zwolnij odswiezanie
-  bool  sleeptime;  // uspij nadajnik
-  bool  reset;
+  bool    getgwizd;
+  time_t  odbiornik_gwizd_time_at;
 };
 outdata nrfdata;
 
@@ -83,67 +80,16 @@ bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 // FUNKCJE ODBIORNIKA:
 
 
-// FUNKCJA ROZBIEGOWA TABLICY Z PROBKAMI CISNIENIA
-// URUCHAMIANA RAZ PO DLUZSZEJ (RF_OFF_TIME) NIEAKTYWNOSCI NADAJNIKA
-void pressure_prepare()
+// SPRAWDZA CZY Z NADAJNIKA DOTARLA WARTOSC TRUE DLA GETGWIZD
+// JESLI TAK WLACZA PRZEKAZNIKI ITP..
+void check_whistle()
 {
-  // START ODBIORU I USREDNIANIE DANYCH
-  for(int i=0; i < BME_AVG_COUNT; i++)  // w rozbiegu usredniaj wraz z rosnacym licznikiem i.
-  {
-    bme_tbl[i] = nrfdata.bme_data;              // przypisz dane z nadajnika x AVG COUNT
-    bme_avg += bme_tbl[i];              // dodaj do sredniej wartosc z tablicy[i]
-  }
-  bme_avg = bme_avg / BME_AVG_COUNT;    // dzielimy przez ilosc zapisanych wartosci w tablicy
-  bme_rozbieg = false;
-  bme_avg_i = 0;
-}
-
-// ODBIOR DANYCH Z NADAJNIKA I USREDNIENIE WYNIKU DO DALSZYCH DZIALAN
-// URUCHAMIANE TYLKO KIEDY NADAJNIK ODBIERA BME
-void manage_pressure()
-{
-  // ROZBIEG TABLICY SREDNIEGO CISNIENIA
-  if(bme_rozbieg == true)
-  {
-    pressure_prepare();
-    #ifdef DEBUG
-      Serial.println("pressure prepare");
-    #endif
-  }
-
-  // START USREDNIANIA DANYCH
-  if(bme_avg_i < BME_AVG_COUNT)
-  {
-    if((nrfdata.bme_data < (bme_avg + BME_AVG_DIFF)) && (nrfdata.bme_data > (bme_avg - BME_AVG_DIFF)))  // jesli obecne probka miesci sie w widelkach +-[BME_AVG_DIFF] 
-    {
-      bme_tbl[bme_avg_i] = nrfdata.bme_data;  // dodaj nowa wartosc do tabeli
-      bme_avg_i++;                    // zwieksz licznik
-    }
-  }
-  else
-  {
-    bme_avg_i = 0;
-  }
-
-  bme_avg = 0;                          // zeruj srednia przed petla
-  for(int i=0; i <= BME_AVG_COUNT; i++) // Usredniaj zgodnie z iloscia probek [BME_AVG_COUNT]
-  {
-    bme_avg += bme_tbl[i];              // dodaj do sredniej wartosc z tablicy[i]
-  }
-  bme_avg = bme_avg / BME_AVG_COUNT;    // dzielimy przez ilosc zapisanych wartosci w tablicy
-}
-
-// SPRAWDZA CZY NASTAPIL WZROST CISNIENIA W STOSUNKU DO SREDNIEJ AVG
-// CZULOSC BME_AVG_SENS
-void check_pressure()
-{
-  if(nrfdata.bme_data > (bme_avg + BME_AVG_SENS))             // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
+  if(nrfdata.getgwizd == true)             // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
   {
     #ifdef DEBUG
-      Serial.print("GWIZD ON: "); Serial.println(nrfdata.bme_data);
+      Serial.print("GWIZD ON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
-    gwizd_on = true;                                  // ustaw gwizdek aktywny
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
 
     if(input_active == true)                          // jesli OUTPUT byl zaswiecony przez wejscia INPUT
@@ -161,18 +107,15 @@ void check_pressure()
     outPin_active[2] = true;
     outPin_active[3] = true;
   }
-  else if((nrfdata.bme_data < (bme_avg + BME_AVG_DIFF)) && (nrfdata.bme_data > (bme_avg - BME_AVG_DIFF)) && gwizd_on == true)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
+  else if(nrfdata.getgwizd == false)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
   {
-    #ifdef DEBUG
-      Serial.println("Gwizd OFF");
-    #endif
     outPin_active[0] = false;                         // aktywowane gwizdkiem wyjscia ustaw na OFF
     outPin_active[1] = false;
     outPin_active[2] = false;
     outPin_active[3] = false;
-    gwizd_on = false;                                 // flaga gwizdka rowniez OFF
   }
 }
+
 
 // Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
 // domyslnie OFF -> HIGH  // ON -> LOW
@@ -352,15 +295,9 @@ void checkTimeout()
   {
     slowtime = sleeptime = false;
   }
-
-  if(nrfdata.reset == true)
-  {
-    nrfdata.reset == false;
-    slowtime = sleeptime = false;
-    timeout_start_at = millis();
-  }
 }
 
+// SETUP
 void setup() 
 {
   Serial.begin(BAUDRATE);
@@ -404,6 +341,7 @@ void setup()
   Serial.println("SETUP:OK");
 }
 
+// LOOP
 void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
   radio.openReadingPipe(0, address);
@@ -413,18 +351,12 @@ void loop() {
   {
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
     #ifdef DEBUG
-      Serial.print("Odebrano: "); Serial.println(nrfdata.bme_data);
-      Serial.print("AVG: "); Serial.println(bme_avg);
-      Serial.print("Iget: "); Serial.println(nrfdata.i_get);
-      Serial.print("Slow: "); Serial.println(nrfdata.slowtime);
-      Serial.print("Sleep: "); Serial.println(nrfdata.sleeptime);
-      Serial.print("Reset: "); Serial.println(nrfdata.reset);
+      Serial.print("GwizdON: "); Serial.println(nrfdata.getgwizd);
       Serial.print("CurrentTime: "); Serial.println(currentTime);
       Serial.print("TimeoutAT: "); Serial.println(timeout_start_at);
     #endif
 
-    manage_pressure();                                          // zarzadzanie cisnieniem i srednia
-    check_pressure();                                           // pomiar czy nastapil wzrost
+    check_whistle();                                              // pomiar czy nastapil wzrost
 
     // START COUNT INACTIVE TIME
     rfoffTime = millis();                                       // odliczaj czas od tego momentu gdy nie pojawi sie kolejna porcja danych
@@ -451,6 +383,7 @@ void loop() {
   }
 
   // 3. ODSYLA INFO ZWROTNE
+  /*
   if(nrfdata.i_get == RF_SENDBACK)
   {
     nrfdata.i_get = 0;
@@ -459,7 +392,8 @@ void loop() {
     nrfdata.sleeptime = sleeptime;
     send_back();                                                // odsyla info zwrotne o wylaczeniu nadajnika
   }
+  */
 
   // 4. SPRAWDZA TIMEOUT OD OSTATNIEGO GWIZDNIECIA
-  checkTimeout();
+  //checkTimeout();
 }
