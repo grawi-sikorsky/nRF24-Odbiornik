@@ -64,7 +64,8 @@ time_t timeout_start_at;                                      // TIMER LICZACY C
 
 struct outdata
 {
-  bool    getgwizd;
+  int     ID_nadajnika;
+  int     getgwizd;
   time_t  odbiornik_gwizd_time_at;
 };
 outdata nrfdata;
