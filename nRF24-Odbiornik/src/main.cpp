@@ -46,7 +46,7 @@ bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
 bool input_active;
 
 // nRF24L01 DEFINICJE
-const byte address[12] = "Uodbiurnik1";  // domyslny adres odbiornika
+const byte address[5] = "Odb1";  // domyslny adres odbiornika
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME CZASOMIERZE
@@ -60,15 +60,20 @@ time_t timeout_start_at;                                      // TIMER LICZACY C
 #define BME_AVG_DIFF  800     // im mniej tym dluzej wylacza sie po dmuchaniu. Zbyt malo powoduje ze mimo wylaczenia sie gwizdka, wlacza sie ponownie gdy wartosci wracaja do normy i avg.
 #define BME_AVG_SENS  200     // czulosc dmuchniecia
 
-//float bme_data;               // dane RAW prosto z nadajnika
+#define MAX_WHISTLES  4       // maksymalna ilosc nadajnikow
 
 struct outdata
 {
-  int     ID_nadajnika;
+  //int     ID_nadajnika;
   int     getgwizd;
-  time_t  odbiornik_gwizd_time_at;
+  //time_t  odbiornik_gwizd_time_at;
 };
 outdata nrfdata;
+
+bool ackOK = true;
+
+int whistle_ID[MAX_WHISTLES]; // tablica z identyfikatorami gwizdkow
+int whistles_active;          // licznik aktywnych gwizdkow
 
 float bme_tbl[BME_AVG_COUNT]; // tablica z probkami cisnienia 
 float bme_avg = 0;            // srednie cisnienie -> bme_avg / BME_AVG_COUNT
@@ -81,11 +86,29 @@ bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 // FUNKCJE ODBIORNIKA:
 
 
+// DODAJE NOWY NADAJNIK I PRZYPISUJE MU WOLNY ID!,m
+// DOMYSLNY ID NADAJNIKA = 0, jesli zglosi sie nadajnik z takim ID, zostaje mu przypisany inny z puli dostepnych
+// DOSTEPNE ID znajduja sie w tablicy
+/*
+void setup_whistle()
+{
+  if(nrfdata.ID_nadajnika == 0)                 // jesli zglosi sie nowy nadajnik
+  {
+    if(whistles_active < MAX_WHISTLES)          // jesli sa dostepne wolne ID
+    {
+      whistles_active++;                        // zwieksz ilosc aktywnych gwizdkow - pierwszy gwizdek bedzie miec ID=1!
+      whistle_ID[whistles_active] = whistles_active;
+    }
+    // TODO: jesli wolnych gwizdkow nie ma!
+    // TODO: przesunac tablice na nowe gwizdki
+  }
+}*/
+
 // SPRAWDZA CZY Z NADAJNIKA DOTARLA WARTOSC TRUE DLA GETGWIZD
 // JESLI TAK WLACZA PRZEKAZNIKI ITP..
 void check_whistle()
 {
-  if(nrfdata.getgwizd == true)             // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
+  if(nrfdata.getgwizd == 1)                 // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
   {
     #ifdef DEBUG
       Serial.print("GWIZD ON: "); Serial.println(nrfdata.getgwizd);
@@ -108,15 +131,27 @@ void check_whistle()
     outPin_active[2] = true;
     outPin_active[3] = true;
   }
-  else if(nrfdata.getgwizd == false)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
+  else if(nrfdata.getgwizd == 0)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
   {
     outPin_active[0] = false;                         // aktywowane gwizdkiem wyjscia ustaw na OFF
     outPin_active[1] = false;
     outPin_active[2] = false;
     outPin_active[3] = false;
   }
+  else if(nrfdata.getgwizd == 2)  // transmisja off
+  {
+    // nyc?
+  }
 }
 
+void manage_whistles()
+{
+}
+
+void test()
+{
+    radio.writeAckPayload(1, &ackOK, sizeof(ackOK)); // pre-load data
+}
 
 // Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
 // domyslnie OFF -> HIGH  // ON -> LOW
@@ -276,7 +311,7 @@ void send_back()
   //for
   radio.write(&nrfdata, sizeof(nrfdata));
 
-  radio.openReadingPipe(0, address);
+  radio.openReadingPipe(1, address);
   radio.startListening();
 }
 
@@ -334,8 +369,14 @@ void setup()
 
   // nRF24L01
   radio.begin();
-  radio.openReadingPipe(0, address);
-  radio.setPALevel(RF24_PA_LOW);
+  radio.openReadingPipe(1, address);
+  radio.enableAckPayload();
+  radio.setPALevel(RF24_PA_MAX);
+  radio.setDataRate(RF24_250KBPS);
+  radio.setChannel(95);
+  //radio.setRetries(5,15); // delay, count
+  //radio.setPayloadSize();
+
   radio.startListening();
   pinMode(10, OUTPUT);
 
@@ -345,13 +386,17 @@ void setup()
 // LOOP
 void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
-  radio.openReadingPipe(0, address);
-  radio.startListening();
+  test();
 
+  //radio.openReadingPipe(1, address);
+  //radio.startListening();
   if (radio.available())                                        // jesli dane sa dostepne ->
   {
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
+    //test();
     #ifdef DEBUG
+      //Serial.print("ID Nadajnika: "); Serial.println(nrfdata.ID_nadajnika);
+      //Serial.print("Time AT: "); Serial.println(nrfdata.);
       Serial.print("GwizdON: "); Serial.println(nrfdata.getgwizd);
       Serial.print("CurrentTime: "); Serial.println(currentTime);
       Serial.print("TimeoutAT: "); Serial.println(timeout_start_at);
