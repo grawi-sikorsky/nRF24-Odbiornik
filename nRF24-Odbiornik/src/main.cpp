@@ -31,7 +31,7 @@ const int outpin_array_len = (sizeof(outpin)/sizeof(*outpin));  // DLUGOSC TABLI
 
 // KONFIGURACJA
 #define DEBUG                   // DEBUG, SERIAL itp.
-#define OUTPUT_TIME 8000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
+#define OUTPUT_TIME 5000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
 #define RF_OFF_TIME 5000        // czas [ms] nieaktywnosci nadajnika po ktorym trzeba ponownie wygenerowac tablice probek cisnienia
 #define RF_SENDBACK 25
@@ -51,7 +51,7 @@ RF24 radio(9, 10); // CE, CSN
 
 // TIME CZASOMIERZE
 time_t currentTime, prevTime = 0;                             // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
-time_t outputCurrentTime, prevOutputTime[outpin_array_len];   // TIMER WYJSC OUTPUT - OUTPUT_TIME - 8000 ms
+time_t outputCurrentTime, prevOutputTime[outpin_array_len];   // TIMER WYJSC OUTPUT - OUTPUT_TIME - 5000 ms
 time_t rfoffTime;                                             // TIMER LICZACY CZAS OD OSTATNIEGO ODBIORU DANYCH Z nRF (potrzebny m.in do pozniejszego rozbiegu sredniej)
 time_t timeout_start_at;                                      // TIMER LICZACY CZAS OD OSTATNIEGO GWIZDNIECIA.
 
@@ -66,7 +66,8 @@ struct outdata
 {
   //int     ID_nadajnika;
   int     getgwizd;
-  //time_t  odbiornik_gwizd_time_at;
+  float   raw;
+  float   avg;
 };
 outdata nrfdata;
 
@@ -85,24 +86,6 @@ bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 
 // FUNKCJE ODBIORNIKA:
 
-
-// DODAJE NOWY NADAJNIK I PRZYPISUJE MU WOLNY ID!,m
-// DOMYSLNY ID NADAJNIKA = 0, jesli zglosi sie nadajnik z takim ID, zostaje mu przypisany inny z puli dostepnych
-// DOSTEPNE ID znajduja sie w tablicy
-/*
-void setup_whistle()
-{
-  if(nrfdata.ID_nadajnika == 0)                 // jesli zglosi sie nowy nadajnik
-  {
-    if(whistles_active < MAX_WHISTLES)          // jesli sa dostepne wolne ID
-    {
-      whistles_active++;                        // zwieksz ilosc aktywnych gwizdkow - pierwszy gwizdek bedzie miec ID=1!
-      whistle_ID[whistles_active] = whistles_active;
-    }
-    // TODO: jesli wolnych gwizdkow nie ma!
-    // TODO: przesunac tablice na nowe gwizdki
-  }
-}*/
 
 // SPRAWDZA CZY Z NADAJNIKA DOTARLA WARTOSC TRUE DLA GETGWIZD
 // JESLI TAK WLACZA PRZEKAZNIKI ITP..
@@ -395,11 +378,11 @@ void loop() {
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
     //test();
     #ifdef DEBUG
-      //Serial.print("ID Nadajnika: "); Serial.println(nrfdata.ID_nadajnika);
-      //Serial.print("Time AT: "); Serial.println(nrfdata.);
+      Serial.print("AVG: "); Serial.println(nrfdata.avg);
+      Serial.print("RAW: "); Serial.println(nrfdata.raw);
       Serial.print("GwizdON: "); Serial.println(nrfdata.getgwizd);
-      Serial.print("CurrentTime: "); Serial.println(currentTime);
-      Serial.print("TimeoutAT: "); Serial.println(timeout_start_at);
+      //Serial.print("CurrentTime: "); Serial.println(currentTime);
+      //Serial.print("TimeoutAT: "); Serial.println(timeout_start_at);
     #endif
 
     check_whistle();                                              // pomiar czy nastapil wzrost
