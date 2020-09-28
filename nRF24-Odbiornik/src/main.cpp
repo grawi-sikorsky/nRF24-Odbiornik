@@ -127,10 +127,6 @@ void check_whistle()
   }
 }
 
-void manage_whistles()
-{
-}
-
 void test()
 {
     radio.writeAckPayload(1, &ackOK, sizeof(ackOK)); // pre-load data
