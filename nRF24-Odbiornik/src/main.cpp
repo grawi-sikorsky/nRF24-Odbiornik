@@ -364,11 +364,10 @@ void setup()
 
 // LOOP
 void loop() {
-  // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
-  test();
 
-  //radio.openReadingPipe(1, address);
-  //radio.startListening();
+  test();     // przygotuj ACK
+
+  // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
   if (radio.available())                                        // jesli dane sa dostepne ->
   {
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
@@ -377,8 +376,6 @@ void loop() {
       Serial.print("AVG: "); Serial.println(nrfdata.avg);
       Serial.print("RAW: "); Serial.println(nrfdata.raw);
       Serial.print("GwizdON: "); Serial.println(nrfdata.getgwizd);
-      //Serial.print("CurrentTime: "); Serial.println(currentTime);
-      //Serial.print("TimeoutAT: "); Serial.println(timeout_start_at);
     #endif
 
     check_whistle();                                              // pomiar czy nastapil wzrost
