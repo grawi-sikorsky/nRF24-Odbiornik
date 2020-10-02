@@ -53,7 +53,7 @@ bool inPin1_State, inPin1_prev_State,
     inPin3_State, inPin3_prev_State,
     inPin4_State, inPin4_prev_State;
 bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
-bool input_active;
+bool input_active = false;
 bool input_rf;                          // info z nadajnika rf o ledach
 
 // nRF24L01 DEFINICJE
@@ -103,7 +103,7 @@ void check_whistle()
     #endif
 
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
-
+/*
     if(input_active == true)                          // jesli OUTPUT byl juz zaswiecony przez wejscia INPUT
     {
       for(int i=0; i <= outpin_array_len-1; i++)        // na chwile wyzeruj wszystkie wyjscia -> migniecie gdyby wyjscia byly juz aktywne sygnalem z WEJSC.
@@ -113,7 +113,7 @@ void check_whistle()
       }
       input_active = false;                            // Zapomnij o INPUTach
     }
-
+*/
     outPin_active[0] = true;                          // ustaw konkretne wyjscia aktywne po gwizdnieciu [do konfiguracji]
     outPin_active[1] = true;
     outPin_active[2] = true;
@@ -282,7 +282,6 @@ void manage_output()
     if(outPin_active[i] == true)
     {
       digitalWriteFast(outpin[i], LOW);
-      //digitalWriteFast(LEDPIN, HIGH);
       // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
       // JESLI TAK WYLACZA WYJSCIE
       // JESLI NIE - NYC
@@ -381,9 +380,8 @@ void loop() {
     if(millis() - rfoffTime >= RF_OFF_TIME && bme_rozbieg == false)   // sprawdz czas od ostatniego pakietu
     {
       #ifdef DEBUGSERIAL
-        Serial.println("BME rozbieg true");
+        Serial.println("ostatni pakiet RF_OFF_TIME temu");
       #endif
-      bme_rozbieg = true;                                             // ustaw informacje o potrzebie ponownego wypelnienia tablicy danymi
     }
 
     //TIMEOUT DLA INFO LEDA
