@@ -17,8 +17,9 @@
 #define TIMEOUT_2       40000       // drugi prog = 5 400 000 = 90 min // z uwagi na sleep-millis: 60 min
 
 // KONFIGURACJA WYJSC:
-#define TESTMODE                // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
-#define DEFAULT                 // DOMYSLNE USTAWIENIA
+//#define TEST_MODE                 // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
+#define EASY_MODE                 // WESJA PODSTAWOWA LANCUT [ GWIZDEK -> OUT1; POMOCNICZE -> OUT2; Reszta wolna]
+#define DEFAULT_MODE              // DOMYSLNE USTAWIENIA
 
 // PINY WEJSCIOWE
 #define INPIN1  5     // kosz lewy POMARANCZOWE
@@ -114,25 +115,54 @@ void check_whistle()
       input_active = false;                            // Zapomnij o INPUTach
     }
 */
-    outPin_active[0] = true;                          // ustaw konkretne wyjscia aktywne po gwizdnieciu [do konfiguracji]
-    outPin_active[1] = true;
-    outPin_active[2] = true;
-    outPin_active[3] = true;
-    outPin_active[4] = true;
-    outPin_active[5] = true;
-    outPin_active[6] = true;
-    outPin_active[7] = true;
+
+    // TEST_MODE
+    #if defined TEST_MODE
+      outPin_active[0] = true;                          // ustaw konkretne wyjscia aktywne po gwizdnieciu [do konfiguracji]
+      outPin_active[1] = true;
+      outPin_active[2] = true;
+      outPin_active[3] = true;
+      outPin_active[4] = true;
+      outPin_active[5] = true;
+      #ifndef DEBUGSERIAL
+      outPin_active[6] = true;
+      outPin_active[7] = true;
+      #endif
+
+    // EASY_MODE
+    #elif defined EASY_MODE
+      outPin_active[0] = true;
+
+    // NORMAL_MODE
+    #else
+      outPin_active[0] = true;
+      // costam costam
+    #endif
   }
   else if(nrfdata.getgwizd == 0)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
   {
-    outPin_active[0] = false;                         // aktywowane gwizdkiem wyjscia ustaw na OFF
-    outPin_active[1] = false;
-    outPin_active[2] = false;
-    outPin_active[3] = false;
-    outPin_active[4] = false;
-    outPin_active[5] = false;
-    outPin_active[6] = false;
-    outPin_active[7] = false;
+    // TEST_MODE
+    #if defined TEST_MODE
+      outPin_active[0] = false;                          // ustaw konkretne wyjscia aktywne po gwizdnieciu [do konfiguracji]
+      outPin_active[1] = false;
+      outPin_active[2] = false;
+      outPin_active[3] = false;
+      outPin_active[4] = false;
+      outPin_active[5] = false;
+      #ifndef DEBUGSERIAL
+      outPin_active[6] = false;
+      outPin_active[7] = false;
+      #endif
+
+    // EASY_MODE
+    #elif defined EASY_MODE
+      outPin_active[0] = false;
+
+    // NORMAL_MODE
+    #else
+      outPin_active[0] = false;
+      // costam costam
+    #endif
   }
   else if(nrfdata.getgwizd == 2)  // transmisja off
   {
@@ -143,7 +173,12 @@ void check_whistle()
 // USTAWIA OUTPUTY W JEDNEJ FUNKCJI
 // PRZYJMUJE NUMER WYJSCIA KTORY CHCEMY AKTYWOWAC [ 0 - 7 ]
 // WIEKSZA WARTOSC ZOSTAJE POMINIETA
+// DEBUG SERIAL POWODUJE PRZEPELNIENIE TABLICY !!!
+#ifdef DEBUGSERIAL
+void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10)
+#else
 void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int g=10, int h=10)
+#endif
 {
     if(a<8) { outPin_active[a] = true; prevOutputTime[a] = millis(); input_active = true; }
     if(b<8) { outPin_active[b] = true; prevOutputTime[b] = millis(); input_active = true; }
@@ -151,8 +186,10 @@ void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int 
     if(d<8) { outPin_active[d] = true; prevOutputTime[d] = millis(); input_active = true; }
     if(e<8) { outPin_active[e] = true; prevOutputTime[e] = millis(); input_active = true; }
     if(f<8) { outPin_active[f] = true; prevOutputTime[f] = millis(); input_active = true; }
+    #ifndef DEBUGSERIAL
     if(g<8) { outPin_active[g] = true; prevOutputTime[g] = millis(); input_active = true; }
     if(h<8) { outPin_active[h] = true; prevOutputTime[h] = millis(); input_active = true; }
+    #endif
 }
 
 // Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
@@ -192,6 +229,7 @@ bool read_input_rf()
 // KOSZ PRAWY POM && KOSZ PRAWY CZER = KOSZ PRAWY LED && PODLOGA PRAWY LED
 void manage_input()
 {
+  // CZESC ODPOWIEDZIALNA ZA INPUT Z WEJSC FIZYCZNYCH ODBIORNIKA!
   if (read_input_pins() == true )  // jesli byla zmiana na wejsciach sprawdza kazde po kolei i przypisuje konkretne wyjscia 
   {
     // PIN 1 KOSZ LEWY POM
@@ -232,10 +270,18 @@ void manage_input()
     }
   }
 
+  // CZEŚĆ ODPOWIEDZIALNA ZA INPUT Z NADAJNIKOW POMOCNICZYCH!
   if (read_input_rf() == true )
   {
-    #ifdef TESTMODE                 
-      set_output(0,1,2,3,4,5,6,7);  // JESLI TESTMODE (EWRYFINK IS ILUMINEJTED!)
+    #if defined (TEST_MODE)
+      #ifdef DEBUGSERIAL
+        set_output(0,1,2,3,4,5);  // JESLI TESTMODE (EWRYFINK IS ILUMINEJTED!)
+      #else
+        set_output(0,1,2,3,4,5,6,7);  // JESLI TESTMODE (EWRYFINK IS ILUMINEJTED!)
+      #endif
+    #elif defined (EASY_MODE)
+      set_output(1);
+
     #else                           // JESLI KONFIGURACJA DOMYSLNA
       if( nrfdata.getgwizd == 11)
       {
