@@ -9,7 +9,8 @@
 // KONFIGURACJA
 #define DEBUG                   // DEBUG, SERIAL itp.
 #define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
-#define OUTPUT_TIME 5000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
+#define OUTPUT_TIME 4000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
+#define OUTPUT_GWIZD_TIME 2000  // czas wlaczenia przekaznikow po otrzymaniu GWIZDNIECIA
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
 #define RF_OFF_TIME 5000        // czas [ms] nieaktywnosci nadajnika po ktorym trzeba ponownie wygenerowac tablice probek cisnienia
 #define RF_SENDBACK 25
@@ -20,6 +21,7 @@
 //#define TEST_MODE                 // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
 #define EASY_MODE                 // WESJA PODSTAWOWA LANCUT [ GWIZDEK -> OUT1; POMOCNICZE -> OUT2; Reszta wolna]
 #define DEFAULT_MODE              // DOMYSLNE USTAWIENIA
+#define GWIZD_2S                  // GWIZD = 2s LEDOW - wylacza sie automatycznie, jesli nie zdefiniowane to nadajnik wysyla 1, potem 0 aby wylaczyc ledy, a nastepnie 2 jako brak transmisji.
 
 // PINY WEJSCIOWE
 #define INPIN1  5     // kosz lewy POMARANCZOWE
@@ -54,7 +56,7 @@ bool inPin1_State, inPin1_prev_State,
     inPin3_State, inPin3_prev_State,
     inPin4_State, inPin4_prev_State;
 bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
-bool input_active = false;
+bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia wyjscia - jesli true to jest sa to wejscia INPUT, jesli false to Gwizdek
 bool input_rf;                          // info z nadajnika rf o ledach
 
 // nRF24L01 DEFINICJE
@@ -99,22 +101,7 @@ void check_whistle()
 {
   if(nrfdata.getgwizd == 1)                 // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
   {
-    #ifdef DEBUGSERIAL
-      Serial.print("GWIZD ON: "); Serial.println(nrfdata.getgwizd);
-    #endif
-
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
-/*
-    if(input_active == true)                          // jesli OUTPUT byl juz zaswiecony przez wejscia INPUT
-    {
-      for(int i=0; i <= outpin_array_len-1; i++)        // na chwile wyzeruj wszystkie wyjscia -> migniecie gdyby wyjscia byly juz aktywne sygnalem z WEJSC.
-      {
-        outPin_active[i] = false;                       // wszystkie flagi off
-        digitalWriteFast(outpin[i], HIGH);              // wszystkie piny off
-      }
-      input_active = false;                            // Zapomnij o INPUTach
-    }
-*/
 
     // TEST_MODE
     #if defined TEST_MODE
@@ -180,15 +167,15 @@ void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10)
 void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int g=10, int h=10)
 #endif
 {
-    if(a<8) { outPin_active[a] = true; prevOutputTime[a] = millis(); input_active = true; }
-    if(b<8) { outPin_active[b] = true; prevOutputTime[b] = millis(); input_active = true; }
-    if(c<8) { outPin_active[c] = true; prevOutputTime[c] = millis(); input_active = true; }
-    if(d<8) { outPin_active[d] = true; prevOutputTime[d] = millis(); input_active = true; }
-    if(e<8) { outPin_active[e] = true; prevOutputTime[e] = millis(); input_active = true; }
-    if(f<8) { outPin_active[f] = true; prevOutputTime[f] = millis(); input_active = true; }
+    if(a<8) { outPin_active[a] = true; prevOutputTime[a] = millis(); outPin_input[a] = true; }
+    if(b<8) { outPin_active[b] = true; prevOutputTime[b] = millis(); outPin_input[b] = true; }
+    if(c<8) { outPin_active[c] = true; prevOutputTime[c] = millis(); outPin_input[c] = true; }
+    if(d<8) { outPin_active[d] = true; prevOutputTime[d] = millis(); outPin_input[d] = true; }
+    if(e<8) { outPin_active[e] = true; prevOutputTime[e] = millis(); outPin_input[e] = true; }
+    if(f<8) { outPin_active[f] = true; prevOutputTime[f] = millis(); outPin_input[f] = true; }
     #ifndef DEBUGSERIAL
-    if(g<8) { outPin_active[g] = true; prevOutputTime[g] = millis(); input_active = true; }
-    if(h<8) { outPin_active[h] = true; prevOutputTime[h] = millis(); input_active = true; }
+    if(g<8) { outPin_active[g] = true; prevOutputTime[g] = millis(); outPin_input[g] = true; }
+    if(h<8) { outPin_active[h] = true; prevOutputTime[h] = millis(); outPin_input[h] = true; }
     #endif
 }
 
@@ -331,12 +318,20 @@ void manage_output()
       // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
       // JESLI TAK WYLACZA WYJSCIE
       // JESLI NIE - NYC
-      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && gwizd_on == false) // jesli minie czas OUTPUT_TIME A GWIZDEK NIE JEST AKTYWNY!
+      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && outPin_input[i] == true) // jesli minie czas OUTPUT_TIME A GWIZDEK NIE JEST AKTYWNY!
       {
         prevOutputTime[i] = outputCurrentTime; // zeruj licznik
         outPin_active[i] = false; // flaga output na false
-        input_active = false;     // info o wejsciu
+        outPin_input[i] = false; // info o wejsciu
       }
+      #ifdef GWIZD_2S
+      if((outputCurrentTime - timeout_start_at >= OUTPUT_GWIZD_TIME) && outPin_input[i] == false)
+      {
+        timeout_start_at = outputCurrentTime; // zeruj licznik
+        outPin_active[i] = false; // flaga output na false
+        outPin_input[i] = false; // info o wejsciu
+      }
+      #endif
     }
     else if(outPin_active[i] == false && gwizd_on == false) // outpin == false
     {
