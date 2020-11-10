@@ -440,5 +440,7 @@ void loop() {
     prevTime = currentTime;
     manage_input();                                             // zarzadzaj wejsciami
     manage_output();                                            // zarzadzaj wyjsciami
+
+    Serial.println("loop");
   }
 }
