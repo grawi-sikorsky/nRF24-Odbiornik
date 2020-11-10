@@ -109,7 +109,13 @@ bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 
     // wysylamy wiadomosc
     bool result;
+    nrfdata.getgwizd=666;
     result = radio.write(&nrfdata, sizeof(nrfdata));   // PIERWSZA TRANSMISJA DO ODBIORNIKA!
+
+    if (result)
+      Serial.println("ok...");
+    else
+      Serial.println("failed.");
 
     // przerzucamy sie na odbior
     radio.openReadingPipe(1, address);
@@ -125,7 +131,8 @@ void check_whistle()
   {
     #ifdef INFORMUJ_INNE_ODBIORNIKI
       // FUNKCJA ODSYLAJACA DO POZOSTALYCH ODBIORNIKOW INFO ZE MAJA SIE WZBUDZIC
-      send_RF_to_other();
+      //send_RF_to_other();
+      //Serial.println("informuje inny odbiornik.");
     #endif
 
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
@@ -468,6 +475,6 @@ void loop() {
     manage_input();                                             // zarzadzaj wejsciami
     manage_output();                                            // zarzadzaj wyjsciami
 
-    Serial.println("loop");
+    //Serial.println("loop");
   }
 }
