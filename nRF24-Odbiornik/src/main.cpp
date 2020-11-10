@@ -94,13 +94,40 @@ bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 
 // FUNKCJE ODBIORNIKA:
 
+// nowa sprawa
+#define INFORMUJ_INNE_ODBIORNIKI
 
+#ifdef INFORMUJ_INNE_ODBIORNIKI
+  void send_RF_to_other()
+  {
+    // przerzucamy sie na nadawanie
+    radio.stopListening();
+    radio.openWritingPipe(address);
+    radio.enableAckPayload();
+    radio.setRetries(1,8); // delay, count
+    radio.setChannel(95);
+
+    // wysylamy wiadomosc
+    bool result;
+    result = radio.write(&nrfdata, sizeof(nrfdata));   // PIERWSZA TRANSMISJA DO ODBIORNIKA!
+
+    // przerzucamy sie na odbior
+    radio.openReadingPipe(1, address);
+    radio.setChannel(95);
+    radio.startListening();
+  }
+#endif
 // SPRAWDZA CZY Z NADAJNIKA DOTARLA WARTOSC TRUE DLA GETGWIZD
 // JESLI TAK WLACZA PRZEKAZNIKI ITP..
 void check_whistle()
 {
   if(nrfdata.getgwizd == 1)                 // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
   {
+    #ifdef INFORMUJ_INNE_ODBIORNIKI
+      // FUNKCJA ODSYLAJACA DO POZOSTALYCH ODBIORNIKOW INFO ZE MAJA SIE WZBUDZIC
+      send_RF_to_other();
+    #endif
+
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
 
     // TEST_MODE
