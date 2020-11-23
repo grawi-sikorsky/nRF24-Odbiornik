@@ -4,7 +4,7 @@
 #include <RF24.h>
 #include <time.h>
 
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // KONFIGURACJA
 #define DEBUG                   // DEBUG, SERIAL itp.
@@ -66,8 +66,12 @@ RF24 radio(9, 10); // CE, CSN
 // TIME CZASOMIERZE
 time_t currentTime, prevTime = 0;                             // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
 time_t outputCurrentTime, prevOutputTime[outpin_array_len];   // TIMER WYJSC OUTPUT - OUTPUT_TIME - 5000 ms
-time_t rfoffTime;                                             // TIMER LICZACY CZAS OD OSTATNIEGO ODBIORU DANYCH Z nRF (potrzebny m.in do pozniejszego rozbiegu sredniej)
 time_t timeout_start_at;                                      // TIMER LICZACY CZAS OD OSTATNIEGO GWIZDNIECIA.
+time_t led_time;
+#ifdef DEBUGSERIAL
+  time_t prev_debug_time;
+  #define SERIAL_DEBUG_FREQ 3000
+#endif
 
 // PRESSURE DEFINICJE I ZMIENNE
 #define BME_AVG_COUNT 20      // wiecej -> dluzszy powrot avg do normy
@@ -89,8 +93,6 @@ float bme_avg = 0;            // srednie cisnienie -> bme_avg / BME_AVG_COUNT
 int   bme_avg_i = 0;          // licznik AVG
 bool  bme_rozbieg = true;     // info o pierwszym wypelnianiu tabeli AVG
 bool  gwizd_on    = false;    // info o aktywnym gwizdku
-bool  slowtime;               // info zwrotne o zwolnieniu nadajnika
-bool  sleeptime;              // info zwrotne o uspieniu nadajnika
 
 // FUNKCJE ODBIORNIKA:
 
@@ -188,6 +190,10 @@ void check_whistle()
   else if(nrfdata.getgwizd == 2)  // transmisja off
   {
     // nyc?
+  }
+  else // garbage... gwizdON
+  {
+    nrfdata.getgwizd = 2;
   }
 }
 
@@ -374,6 +380,23 @@ void manage_output()
   }
 }
 
+// DEBUG
+void debug_print_output()
+{
+  Serial.print("nrfdata.getgwizd: "); Serial.println(nrfdata.getgwizd);
+  Serial.print("outputCurrenttime: "); Serial.println(outputCurrentTime);
+  for (int i = 0; i < outpin_array_len; i++)
+  {
+    Serial.print("outPin_active[");Serial.print(i); Serial.print("]: "); Serial.println(outPin_active[i]);
+    Serial.print("prevOutputTime[");Serial.print(i); Serial.print("]: "); Serial.println(prevOutputTime[i]);
+    Serial.print("outPin_input[");Serial.print(i); Serial.print("]: "); Serial.println(outPin_input[i]);
+  }
+    Serial.print("gwizdON: "); Serial.println(gwizd_on);
+    Serial.print("timeout_start_at: "); Serial.println(timeout_start_at);
+
+    Serial.println("===================");
+}
+
 // SETUP
 void setup() 
 {
@@ -417,7 +440,8 @@ void setup()
   // nRF24L01
   radio.begin();
   radio.openReadingPipe(1, address);
-  radio.enableAckPayload();
+  //radio.enableAckPayload();
+  //radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
   radio.setDataRate(RF24_250KBPS);
   radio.setChannel(95);
@@ -442,25 +466,16 @@ void loop() {
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
 
     #ifdef DEBUGSERIAL
-      Serial.print("GwizdON: "); Serial.println(nrfdata.getgwizd);
+      Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
     check_whistle();                                              // pomiar czy nastapil wzrost
-
-    // START COUNT INACTIVE TIME
-    rfoffTime = millis();                                       // odliczaj czas od tego momentu gdy nie pojawi sie kolejna porcja danych
+    led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->
   {
-    if(millis() - rfoffTime >= RF_OFF_TIME && bme_rozbieg == false)   // sprawdz czas od ostatniego pakietu
-    {
-      #ifdef DEBUGSERIAL
-        Serial.println("ostatni pakiet RF_OFF_TIME temu");
-      #endif
-    }
-
     //TIMEOUT DLA INFO LEDA
-    if(millis() - rfoffTime >= 50)
+    if(millis() - led_time >= 500)
     {
       digitalWriteFast(LEDPIN,LOW);
     }
@@ -474,7 +489,14 @@ void loop() {
     prevTime = currentTime;
     manage_input();                                             // zarzadzaj wejsciami
     manage_output();                                            // zarzadzaj wyjsciami
-
-    //Serial.println("loop");
   }
+
+  #ifdef DEBUGSERIAL
+    if(currentTime - prev_debug_time >= SERIAL_DEBUG_FREQ )     // jesli minelo [SERIAL_DEBUG_FREQ] ->
+    {
+      prev_debug_time = currentTime;
+      debug_print_output();
+      digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN));
+    }
+  #endif
 }
