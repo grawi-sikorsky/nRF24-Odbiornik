@@ -7,27 +7,25 @@
 #define BAUDRATE 115200
 
 // KONFIGURACJA
-//#define DEBUG                   // DEBUG, SERIAL itp.
 #define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
 #define OUTPUT_TIME 4000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
 #define OUTPUT_GWIZD_TIME 2000  // czas wlaczenia przekaznikow po otrzymaniu GWIZDNIECIA
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
-#define RF_OFF_TIME 5000        // czas [ms] nieaktywnosci nadajnika po ktorym trzeba ponownie wygenerowac tablice probek cisnienia
-#define RF_SENDBACK 25
-#define TIMEOUT_1       20000       // pierwszy timeiut // realnie wychodzi jakies (1 800 000 ms = 30 min) / 25 = 72000
-#define TIMEOUT_2       40000       // drugi prog = 5 400 000 = 90 min // z uwagi na sleep-millis: 60 min
+
 
 // KONFIGURACJA WYJSC:
 //#define TEST_MODE                 // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
 #define EASY_MODE                 // WESJA PODSTAWOWA LANCUT [ GWIZDEK -> OUT1; POMOCNICZE -> OUT2; Reszta wolna]
-#define DEFAULT_MODE              // DOMYSLNE USTAWIENIA
 #define GWIZD_2S                  // GWIZD = 2s LEDOW - wylacza sie automatycznie, jesli nie zdefiniowane to nadajnik wysyla 1, potem 0 aby wylaczyc ledy, a nastepnie 2 jako brak transmisji.
 
+// USTAWIENIA ADRESU
+#define ADDR1  5     // Zworka1 - ZW1
+#define ADDR2  6     // Zworka2 - ZW2
+#define ADDR3  7     // Zworka3 - ZW3
+bool addr1_State, addr2_State, addr3_State;
+
 // PINY WEJSCIOWE
-#define INPIN1  5     // kosz lewy POMARANCZOWE
-#define INPIN2  6     // kosz lewy CZERWONE
-#define INPIN3  7     // kosz prawy POMARANCZOWE
-#define INPIN4  8     // kosz prawy CZERWONE
+#define INPIN1  8     // kosz prawy CZERWONE
 
 // PINY WYJSCIOWE NA PRZEKAZNIKI
 #define OUTPIN0 16    //  kosz lewy
@@ -51,16 +49,12 @@ const int outpin_array_len = (sizeof(outpin)/sizeof(*outpin));  // DLUGOSC TABLI
 #define LEDPIN  14  // LED
 #define BTNPIN  15  // w przyszlosci PC1/ pin 15, obecnie A7/ADC7 pin A7
 
-bool inPin1_State, inPin1_prev_State,
-    inPin2_State, inPin2_prev_State,
-    inPin3_State, inPin3_prev_State,
-    inPin4_State, inPin4_prev_State;
+bool inPin1_State, inPin1_prev_State;
 bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
 bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia wyjscia - jesli true to jest sa to wejscia INPUT, jesli false to Gwizdek
-bool input_rf;                          // info z nadajnika rf o ledach
 
 // nRF24L01 DEFINICJE
-const byte address[5] = "Odb1";  // domyslny adres odbiornika
+byte address[5] = "Odb1";  // domyslny adres odbiornika
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME CZASOMIERZE
@@ -73,11 +67,6 @@ time_t led_time;
   #define SERIAL_DEBUG_FREQ 3000
 #endif
 
-// PRESSURE DEFINICJE I ZMIENNE
-#define BME_AVG_COUNT 20      // wiecej -> dluzszy powrot avg do normy
-#define BME_AVG_DIFF  800     // im mniej tym dluzej wylacza sie po dmuchaniu. Zbyt malo powoduje ze mimo wylaczenia sie gwizdka, wlacza sie ponownie gdy wartosci wracaja do normy i avg.
-#define BME_AVG_SENS  200     // czulosc dmuchniecia
-
 struct outdata
 {
   int     getgwizd;
@@ -87,12 +76,7 @@ struct outdata
 outdata nrfdata;
 
 bool ackOK = true;
-
-float bme_tbl[BME_AVG_COUNT]; // tablica z probkami cisnienia 
-float bme_avg = 0;            // srednie cisnienie -> bme_avg / BME_AVG_COUNT
-int   bme_avg_i = 0;          // licznik AVG
-bool  bme_rozbieg = true;     // info o pierwszym wypelnianiu tabeli AVG
-bool  gwizd_on    = false;    // info o aktywnym gwizdku
+bool gwizd_on    = false;    // info o aktywnym gwizdku
 
 // FUNKCJE ODBIORNIKA:
 
@@ -125,6 +109,7 @@ bool  gwizd_on    = false;    // info o aktywnym gwizdku
     radio.startListening();
   }
 #endif
+
 // SPRAWDZA CZY Z NADAJNIKA DOTARLA WARTOSC TRUE DLA GETGWIZD
 // JESLI TAK WLACZA PRZEKAZNIKI ITP..
 void check_whistle()
@@ -133,8 +118,6 @@ void check_whistle()
   {
     #ifdef INFORMUJ_INNE_ODBIORNIKI
       // FUNKCJA ODSYLAJACA DO POZOSTALYCH ODBIORNIKOW INFO ZE MAJA SIE WZBUDZIC
-      //send_RF_to_other();
-      //Serial.println("informuje inny odbiornik.");
     #endif
 
     timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
@@ -189,11 +172,12 @@ void check_whistle()
   }
   else if(nrfdata.getgwizd == 2)  // transmisja off
   {
-    // nyc?
+    // nyc ne robymy..
   }
-  else // garbage... gwizdON
+  else // jesli pojawi sie jakies garbage...
   {
-    //nrfdata.getgwizd = 2;
+    // nrfdata.getgwizd = 2;
+    // bylo nrfdata = 2 ale podczas otrzymywania z pomocniczych 11/12/13/21/22/23 ustawialo 2 - trzeba odliftrowac
     // TODO: odfiltrowac wszystkie inne sygnaly niz uzywane w RF
   }
 }
@@ -201,7 +185,6 @@ void check_whistle()
 // USTAWIA OUTPUTY W JEDNEJ FUNKCJI
 // PRZYJMUJE NUMER WYJSCIA KTORY CHCEMY AKTYWOWAC [ 0 - 7 ]
 // WIEKSZA WARTOSC ZOSTAJE POMINIETA
-// DEBUG SERIAL POWODUJE PRZEPELNIENIE TABLICY !!!
 #ifdef DEBUGSERIAL
 void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10)
 #else
@@ -225,14 +208,14 @@ void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int 
 bool read_input_pins()
 {
   inPin1_State = digitalReadFast(INPIN1);
-  inPin2_State = digitalReadFast(INPIN2);
-  inPin3_State = digitalReadFast(INPIN3);
-  inPin4_State = digitalReadFast(INPIN4);
+  //inPin2_State = digitalReadFast(INPIN2);
+  //inPin3_State = digitalReadFast(INPIN3);
+  //inPin4_State = digitalReadFast(INPIN4);
 
-  if( inPin1_State != inPin1_prev_State || 
-      inPin2_State != inPin2_prev_State || 
-      inPin3_State != inPin3_prev_State || 
-      inPin4_State != inPin4_prev_State )
+  if( inPin1_State != inPin1_prev_State )
+  //||  inPin2_State != inPin2_prev_State || 
+  //    inPin3_State != inPin3_prev_State || 
+  //    inPin4_State != inPin4_prev_State )
     return true;                              // jesli na ktorymkolwiek pinie wystapia zmiana zwroc TRUE
   else 
     return false;                             // jesli bez zmian -> FALSE
@@ -260,7 +243,7 @@ void manage_input()
   // CZESC ODPOWIEDZIALNA ZA INPUT Z WEJSC FIZYCZNYCH ODBIORNIKA!
   if (read_input_pins() == true )  // jesli byla zmiana na wejsciach sprawdza kazde po kolei i przypisuje konkretne wyjscia 
   {
-    // PIN 1 KOSZ LEWY POM
+    // INPUT PIN 1 - 
     if( inPin1_State != inPin1_prev_State )                   // jesli nastapila zmiana:
     {
       if(inPin1_State == LOW)                                 // i byla to zmiana na LOW czyli aktywne
@@ -269,6 +252,7 @@ void manage_input()
       }
       inPin1_prev_State = inPin1_State;                       // przypisz obecna wartosc
     }
+    /*
     // PIN 2 KOSZ LEWY CZER
     if( inPin2_State != inPin2_prev_State )
     {
@@ -296,6 +280,7 @@ void manage_input()
       }
       inPin4_prev_State = inPin4_State; // przypisz obecna wartosc
     }
+    */
   }
 
   // CZEŚĆ ODPOWIEDZIALNA ZA INPUT Z NADAJNIKOW POMOCNICZYCH!
@@ -381,6 +366,39 @@ void manage_output()
   }
 }
 
+void setRFaddress()
+{
+  // ODCZYTUJEMY WARTOSCI ZE ZWOREK (ZW1 - ZW3) W URZADZENIU
+  addr1_State = !digitalReadFast(ADDR1);
+  addr2_State = !digitalReadFast(ADDR2);
+  addr3_State = !digitalReadFast(ADDR3);
+
+  String addr_temp;
+
+  if(addr1_State == false || addr2_State == false || addr3_State == false)
+  {
+    addr_temp = "Odb2";
+
+    for (int i = 0; i < 5; i++)
+    {
+      Serial.print((char)address[i]);
+    }
+    Serial.println();
+  }
+  else if(addr1_State == true || addr2_State == true || addr3_State == true)
+  {
+
+  }
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
+
+  //strncpy((byte)address, addr_temp.c_str(), sizeof(address));
+}
+
 // DEBUG
 void debug_print_output()
 {
@@ -395,6 +413,12 @@ void debug_print_output()
     Serial.print("gwizdON: "); Serial.println(gwizd_on);
     Serial.print("timeout_start_at: "); Serial.println(timeout_start_at);
 
+    setRFaddress();
+    for (int i = 0; i < 5; i++)
+    {
+      Serial.print((char)address[i]);
+    }
+    Serial.println();
     Serial.println("===================");
 }
 
@@ -407,9 +431,9 @@ void setup()
 
   // PINS
   pinModeFast(INPIN1, INPUT_PULLUP);
-  pinModeFast(INPIN2, INPUT_PULLUP);
-  pinModeFast(INPIN3, INPUT_PULLUP);
-  pinModeFast(INPIN4, INPUT_PULLUP);
+  pinModeFast(ADDR1, INPUT_PULLUP);
+  pinModeFast(ADDR2, INPUT_PULLUP);
+  pinModeFast(ADDR3, INPUT_PULLUP);
 
   pinModeFast(OUTPIN0, OUTPUT);
   pinModeFast(OUTPIN1, OUTPUT);
@@ -434,9 +458,10 @@ void setup()
   digitalWriteFast(OUTPIN7, HIGH);
 
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
-  inPin2_State = inPin2_prev_State = digitalReadFast(INPIN2); 
-  inPin3_State = inPin3_prev_State = digitalReadFast(INPIN3); 
-  inPin4_State = inPin4_prev_State = digitalReadFast(INPIN4); 
+  addr1_State = digitalReadFast(ADDR1);
+  addr2_State = digitalReadFast(ADDR2);
+  addr3_State = digitalReadFast(ADDR3);
+  setRFaddress();
 
   // nRF24L01
   radio.begin();
