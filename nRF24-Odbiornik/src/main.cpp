@@ -22,7 +22,8 @@
 #define ADDR1  5     // Zworka1 - ZW1
 #define ADDR2  6     // Zworka2 - ZW2
 #define ADDR3  7     // Zworka3 - ZW3
-bool addr1_State, addr2_State, addr3_State;
+bool addr1_State, addr2_State, addr3_State,
+    prev_addr1_State, prev_addr2_State, prev_addr3_State;
 
 // PINY WEJSCIOWE
 #define INPIN1  8     // kosz prawy CZERWONE
@@ -54,7 +55,8 @@ bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
 bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia wyjscia - jesli true to jest sa to wejscia INPUT, jesli false to Gwizdek
 
 // nRF24L01 DEFINICJE
-byte address[5] = "Odb1";  // domyslny adres odbiornika
+byte address[][5] = {"Odb0","Odb1","Odb2","Odb3","Odb4","Odb5","Odb6","Odb7"};  // dostepne adresy odbiornikow zgodnie ze zworkami 1-3
+int address_nr = 0;
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME CZASOMIERZE
@@ -366,37 +368,46 @@ void manage_output()
   }
 }
 
+// POBIERA ADRES ZE ZWOREK I USTAWIA GO DLA RFki
 void setRFaddress()
+{
+  if(     addr1_State == false && addr2_State == false && addr3_State == false){address_nr = 0;}
+  else if(addr1_State == false && addr2_State == false && addr3_State == true){address_nr = 1;}
+  else if(addr1_State == false && addr2_State == true && addr3_State == false){address_nr = 2;}
+  else if(addr1_State == false && addr2_State == true && addr3_State == true){address_nr = 3;}
+  else if(addr1_State == true && addr2_State == false && addr3_State == false){address_nr = 4;}
+  else if(addr1_State == true && addr2_State == false && addr3_State == true){address_nr = 5;}
+  else if(addr1_State == true && addr2_State == true && addr3_State == false){address_nr = 6;}
+  else if(addr1_State == true && addr2_State == true && addr3_State == true){address_nr = 7;}
+
+  radio.begin();
+  radio.openReadingPipe(1, address[address_nr]);
+  //radio.enableAckPayload();
+  //radio.setAutoAck(false);
+  radio.setPALevel(RF24_PA_MAX);
+  radio.setDataRate(RF24_250KBPS);
+  radio.setChannel(95);
+  //radio.setRetries(5,15); // delay, count
+  //radio.setPayloadSize();
+  radio.startListening();
+}
+
+// SPRAWDZA CZY NASTAPILA ZMIANA W ZWORKACH
+// JESLI TAK TO USTAWIA NOWY ADRES DLA ODBIORNIKA
+void manage_zworki()
 {
   // ODCZYTUJEMY WARTOSCI ZE ZWOREK (ZW1 - ZW3) W URZADZENIU
   addr1_State = !digitalReadFast(ADDR1);
   addr2_State = !digitalReadFast(ADDR2);
   addr3_State = !digitalReadFast(ADDR3);
 
-  String addr_temp;
-
-  if(addr1_State == false || addr2_State == false || addr3_State == false)
+  if( addr1_State != prev_addr1_State || addr2_State != prev_addr2_State || addr3_State != prev_addr3_State )
   {
-    addr_temp = "Odb2";
-
-    for (int i = 0; i < 5; i++)
-    {
-      Serial.print((char)address[i]);
-    }
-    Serial.println();
+    prev_addr1_State = addr1_State;
+    prev_addr2_State = addr2_State;
+    prev_addr3_State = addr3_State;
+    setRFaddress();
   }
-  else if(addr1_State == true || addr2_State == true || addr3_State == true)
-  {
-
-  }
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-  else if(addr1_State == true || addr2_State == true || addr3_State == true){}
-
-  //strncpy((byte)address, addr_temp.c_str(), sizeof(address));
 }
 
 // DEBUG
@@ -413,10 +424,10 @@ void debug_print_output()
     Serial.print("gwizdON: "); Serial.println(gwizd_on);
     Serial.print("timeout_start_at: "); Serial.println(timeout_start_at);
 
-    setRFaddress();
+    //setRFaddress();
     for (int i = 0; i < 5; i++)
     {
-      Serial.print((char)address[i]);
+      Serial.print((char)address[address_nr][i]);
     }
     Serial.println();
     Serial.println("===================");
@@ -458,14 +469,12 @@ void setup()
   digitalWriteFast(OUTPIN7, HIGH);
 
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
-  addr1_State = digitalReadFast(ADDR1);
-  addr2_State = digitalReadFast(ADDR2);
-  addr3_State = digitalReadFast(ADDR3);
-  setRFaddress();
+
+  manage_zworki();
 
   // nRF24L01
   radio.begin();
-  radio.openReadingPipe(1, address);
+  radio.openReadingPipe(1, address[address_nr]);
   //radio.enableAckPayload();
   //radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
@@ -515,6 +524,7 @@ void loop() {
     prevTime = currentTime;
     manage_input();                                             // zarzadzaj wejsciami
     manage_output();                                            // zarzadzaj wyjsciami
+    manage_zworki();
   }
 
   #ifdef DEBUGSERIAL
