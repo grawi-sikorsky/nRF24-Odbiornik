@@ -116,13 +116,13 @@ bool gwizd_on    = false;    // info o aktywnym gwizdku
 // JESLI TAK WLACZA PRZEKAZNIKI ITP..
 void check_whistle()
 {
-  if(nrfdata.getgwizd == 1)                 // JESLI NOWA PROBKA JEST WIEKSZA OD SREDNIEJ [AVG + AVG_DIFF]
+  if(nrfdata.getgwizd == 1)                 // JESLI GWIZDEK WYSLAL SYGNAL O WZROSCIE CISNIENIA
   {
     #ifdef INFORMUJ_INNE_ODBIORNIKI
-      // FUNKCJA ODSYLAJACA DO POZOSTALYCH ODBIORNIKOW INFO ZE MAJA SIE WZBUDZIC
+      // FUNKCJA ODSYLAJACA DO POZOSTALYCH ODBIORNIKOW INFO ZE MAJA SIE WZBUDZIC - discontinued
     #endif
 
-    timeout_start_at = millis();                      // ustaw czas ostatniego gwizdniecia
+    timeout_start_at = millis();                        // ustaw czas ostatniego gwizdniecia
 
     // TEST_MODE
     #if defined TEST_MODE
@@ -139,7 +139,7 @@ void check_whistle()
 
     // EASY_MODE
     #elif defined EASY_MODE
-      outPin_active[0] = true;
+      outPin_active[0] = true;                          // Obecnie klient potrzebuje wylacznie jednego przekaznika
 
     // NORMAL_MODE
     #else
@@ -147,7 +147,7 @@ void check_whistle()
       // costam costam
     #endif
   }
-  else if(nrfdata.getgwizd == 0)   // JESLI CISNIENIE WRACA DO WIDELEK [AVG +- AVG_DIFF] a gwizdek jest aktywny
+  else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
   {
     // TEST_MODE
     #if defined TEST_MODE
@@ -205,12 +205,14 @@ void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int 
     #endif
 }
 
-// Sprawdza czy stan wejsc sie zmienil w stosunku do prev_state
+// Sprawdza czy stan wejsc fizycznych w odbiorniku sie zmienil w stosunku do prev_state
 // domyslnie OFF -> HIGH  // ON -> LOW
+// Zwraca TRUE jesli nastapila zmiana
+// Zwraca FALSE jesli nie
 bool read_input_pins()
 {
   inPin1_State = digitalReadFast(INPIN1);
-  //inPin2_State = digitalReadFast(INPIN2);
+  //inPin2_State = digitalReadFast(INPIN2); // wylaczone bo 3 piny sa przeznaczone na adresy, pozostalo tylko jedno wejscie fizyczne w odbiorniku
   //inPin3_State = digitalReadFast(INPIN3);
   //inPin4_State = digitalReadFast(INPIN4);
 
@@ -224,6 +226,7 @@ bool read_input_pins()
 }
 
 // Sprawdza czy w danych z RF pojawily sie wartosci 11 12 13 21 22 23.
+// Sa to sygnaly z nadajnika pomocniczego [11,12,13 - LEWY] [21,22,23 - PRAWY]
 bool read_input_rf()
 {
   if( nrfdata.getgwizd == 11 || nrfdata.getgwizd == 12 || nrfdata.getgwizd == 13 ||
@@ -498,7 +501,7 @@ void loop() {
   if (radio.available())                                        // jesli dane sa dostepne ->
   {
     digitalWriteFast(LEDPIN,HIGH);                            // INFO LED ON
-    radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz cisnienie z nadajnika
+    radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz dane z nadajnika
 
     #ifdef DEBUGSERIAL
       Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
@@ -524,7 +527,7 @@ void loop() {
     prevTime = currentTime;
     manage_input();                                             // zarzadzaj wejsciami
     manage_output();                                            // zarzadzaj wyjsciami
-    manage_zworki();
+    manage_zworki();                                            // zarzadzaj zworkami adresowymi
   }
 
   #ifdef DEBUGSERIAL
