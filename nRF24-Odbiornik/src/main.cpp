@@ -17,6 +17,7 @@
 //#define TEST_MODE                 // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
 #define EASY_MODE                 // WESJA PODSTAWOWA LANCUT [ GWIZDEK -> OUT1; POMOCNICZE -> OUT2; Reszta wolna]
 #define GWIZD_2S                  // GWIZD = 2s LEDOW - wylacza sie automatycznie, jesli nie zdefiniowane to nadajnik wysyla 1, potem 0 aby wylaczyc ledy, a nastepnie 2 jako brak transmisji.
+#define STROBO_FREQ 200           // odstep czasu miedzy mignieciami
 
 // USTAWIENIA ADRESU
 #define ADDR1  5     // Zworka1 - ZW1
@@ -52,7 +53,8 @@ const int outpin_array_len = (sizeof(outpin)/sizeof(*outpin));  // DLUGOSC TABLI
 
 bool inPin1_State, inPin1_prev_State;
 bool outPin_active[outpin_array_len];   // flagi informujace o stanie wyjsc
-bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia wyjscia - jesli true to jest sa to wejscia INPUT, jesli false to Gwizdek
+bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia wyjscia - jesli true to jest sa to wejscia INPUT lub POMOCNICZY, jesli false to Gwizdek
+bool output_strobo[outpin_array_len];   // flagi informujace o typie/formie zalaczania wyjscia (false=swiatlo stale, true=strobo/wyjscie migajace)
 
 // nRF24L01 DEFINICJE
 byte address[][5] = {"Odb0","Odb1","Odb2","Odb3","Odb4","Odb5","Odb6","Odb7"};  // dostepne adresy odbiornikow zgodnie ze zworkami 1-3
@@ -62,6 +64,7 @@ RF24 radio(9, 10); // CE, CSN
 // TIME CZASOMIERZE
 time_t currentTime, prevTime = 0;                             // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
 time_t outputCurrentTime, prevOutputTime[outpin_array_len];   // TIMER WYJSC OUTPUT - OUTPUT_TIME - 5000 ms
+time_t outputStroboTime[outpin_array_len];                    // TIMER DLA STROBO
 time_t timeout_start_at;                                      // TIMER LICZACY CZAS OD OSTATNIEGO GWIZDNIECIA.
 time_t led_time;
 #ifdef DEBUGSERIAL
@@ -80,6 +83,7 @@ outdata nrfdata;
 bool ackOK = true;
 bool gwizd_on    = false;    // info o aktywnym gwizdku
 
+void set_output_strobo(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10);
 // FUNKCJE ODBIORNIKA:
 
 // nowa sprawa
@@ -140,7 +144,7 @@ void check_whistle()
     // EASY_MODE
     #elif defined EASY_MODE
       outPin_active[0] = true;                          // Obecnie klient potrzebuje wylacznie jednego przekaznika
-
+      set_output_strobo(1);
     // NORMAL_MODE
     #else
       outPin_active[0] = true;
@@ -202,6 +206,24 @@ void set_output(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int 
     #ifndef DEBUGSERIAL
     if(g<8) { outPin_active[g] = true; prevOutputTime[g] = millis(); outPin_input[g] = true; }
     if(h<8) { outPin_active[h] = true; prevOutputTime[h] = millis(); outPin_input[h] = true; }
+    #endif
+}
+
+#ifdef DEBUGSERIAL
+void set_output_strobo(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10)
+#else
+void set_output_strobo(int a=10, int b=10, int c=10, int d=10, int e=10, int f=10, int g=10, int h=10)
+#endif
+{
+    if(a<8) { outPin_active[a] = true; prevOutputTime[a] = millis(); outPin_input[a] = true; output_strobo[a]=true; }
+    if(b<8) { outPin_active[b] = true; prevOutputTime[b] = millis(); outPin_input[b] = true; output_strobo[b]=true; }
+    if(c<8) { outPin_active[c] = true; prevOutputTime[c] = millis(); outPin_input[c] = true; output_strobo[c]=true; }
+    if(d<8) { outPin_active[d] = true; prevOutputTime[d] = millis(); outPin_input[d] = true; output_strobo[d]=true; }
+    if(e<8) { outPin_active[e] = true; prevOutputTime[e] = millis(); outPin_input[e] = true; output_strobo[e]=true; }
+    if(f<8) { outPin_active[f] = true; prevOutputTime[f] = millis(); outPin_input[f] = true; output_strobo[f]=true; }
+    #ifndef DEBUGSERIAL
+    if(g<8) { outPin_active[g] = true; prevOutputTime[g] = millis(); outPin_input[g] = true; output_strobo[g]=true; }
+    if(h<8) { outPin_active[h] = true; prevOutputTime[h] = millis(); outPin_input[h] = true; output_strobo[h]=true; }
     #endif
 }
 
@@ -299,6 +321,7 @@ void manage_input()
       #endif
     #elif defined (EASY_MODE)
       set_output(1);
+      set_output_strobo(1);
 
     #else                           // JESLI KONFIGURACJA DOMYSLNA
       if( nrfdata.getgwizd == 11)
@@ -343,9 +366,9 @@ void manage_output()
   // JESLI NIE USTAWIA NA WYJSCIU OFF/HIGH
   for(int i=0; i <= outpin_array_len-1; i++)
   {
-    if(outPin_active[i] == true)
+    if(outPin_active[i] == true && output_strobo[i] == false)
     {
-      digitalWriteFast(outpin[i], LOW);
+      digitalWriteFast(outpin[i], LOW); // uruchamiamy przekaznik ON
       // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
       // JESLI TAK WYLACZA WYJSCIE
       // JESLI NIE - NYC
@@ -364,9 +387,26 @@ void manage_output()
       }
       #endif
     }
+    else if(output_strobo[i] == true) // flaga strobo powinna wystarczyc? TODO
+    {
+      //digitalWriteFast(outpin[i], LOW); // uruchamiamy przekaznik ON
+
+      if((outputCurrentTime - outputStroboTime[i] >= STROBO_FREQ) && outPin_input[i] == true)
+      {
+        digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
+        outPin_active[i] = false;
+        digitalWriteFast(outpin[i], !digitalReadFast(outpin[i])); // uruchamiamy przekaznik ON
+        outputStroboTime[i] = outputCurrentTime;
+      }
+
+      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && outPin_input[i] == true)
+      {
+        output_strobo[i] = false; // wylaczamy strobo
+      }
+    }
     else if(outPin_active[i] == false && gwizd_on == false) // outpin == false
     {
-      digitalWriteFast(outpin[i], HIGH);
+      digitalWriteFast(outpin[i], HIGH);  // wylaczamy przekaznik OFF
     }
   }
 }
@@ -508,7 +548,7 @@ void loop() {
     #endif
 
     check_whistle();                                              // pomiar czy nastapil wzrost
-    led_time = millis();
+    //led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->
   {
@@ -519,7 +559,8 @@ void loop() {
     }
   }
 
-  // 2. SPRAWDZ WEJSCIA IN1-IN4:
+  // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE I NAD. POMOCNICZY)
+  // OBSLUGA POZOSTALYCH PERYFERIOW
   currentTime = millis();                                       // pobierz czas do odliczania interwalow sprawdzania WEJSC
 
   if(currentTime - prevTime >= READ_REFRESH_TIME )              // jesli minelo [READ_REFRESH_TIME] ->
