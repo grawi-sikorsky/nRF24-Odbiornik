@@ -56,7 +56,7 @@ bool outPin_input[outpin_array_len];    // flagi informujace o zrodle zalaczenia
 
 // nRF24L01 DEFINICJE
 byte address[][5] = {"Odb0","Odb1","Odb2","Odb3","Odb4","Odb5","Odb6","Odb7"};  // dostepne adresy odbiornikow zgodnie ze zworkami 1-3
-int address_nr = 0;
+int address_nr = 0; // wybor adresu z tablicy powyzej
 RF24 radio(9, 10); // CE, CSN 
 
 // TIME CZASOMIERZE
@@ -90,7 +90,7 @@ bool gwizd_on    = false;    // info o aktywnym gwizdku
   {
     // przerzucamy sie na nadawanie
     radio.stopListening();
-    radio.openWritingPipe(address);
+    radio.openWritingPipe(address[address_nr]);
     radio.enableAckPayload();
     radio.setRetries(1,8); // delay, count
     radio.setChannel(95);
