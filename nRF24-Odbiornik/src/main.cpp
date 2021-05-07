@@ -71,7 +71,6 @@ void loop() {
       Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
-    asdf.check_whistle();                                       // pomiar czy nastapil wzrost
     led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->
@@ -82,6 +81,9 @@ void loop() {
       asdf.setInfoLED(false);
     }
   }
+
+  asdf.check_whistle();                                         // pomiar czy nastapil wzrost
+
 
   // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE I NAD. POMOCNICZY)
   // OBSLUGA POZOSTALYCH PERYFERIOW
