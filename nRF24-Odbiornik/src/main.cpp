@@ -5,10 +5,12 @@
 #include <time.h>
 #include "odbiornik.h"
 
-Odbiornik asdf;
-extern RF24 radio(9, 10); // CE, CSN 
+Odbiornik odbiornik;
+RF24 radio(9, 10); // CE, CSN
+outdata nrfdata;
 
-time_t led_time;
+time_t led_time;                                                // TIMER DLA LED
+time_t currentTime, prevTime = 0;                               // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
 
 #ifdef DEBUGSERIAL
   time_t prev_debug_time;
@@ -48,11 +50,11 @@ void setup()
     Serial.begin(BAUDRATE);
   #endif
 
-  asdf.init();
+  odbiornik.init();
 
-  asdf.manage_zworki();
+  odbiornik.manage_zworki();
 
-  asdf.initRF();
+  odbiornik.initRF();
 
   #ifdef DEBUGSERIAL
     Serial.println("SETUP:OK \n");
@@ -64,26 +66,20 @@ void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
   if (radio.available())                                        // jesli dane sa dostepne ->
   {
-    asdf.setInfoLED(true);                                    // INFO LED ON
+    odbiornik.setInfoLED(true);                                    // INFO LED ON
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz dane z nadajnika
 
     #ifdef DEBUGSERIAL
       Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
+    odbiornik.manage_input();    // caly input ogarniemy w jednej funkcji
     led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->
   {
-    //TIMEOUT DLA INFO LEDA
-    if(millis() - led_time >= INFO_LED_TIME)
-    {
-      asdf.setInfoLED(false);
-    }
+    if(millis() - led_time >= INFO_LED_TIME) odbiornik.setInfoLED(false); //TIMEOUT DLA INFO LEDA
   }
-
-  asdf.check_whistle();                                         // pomiar czy nastapil wzrost
-
 
   // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE I NAD. POMOCNICZY)
   // OBSLUGA POZOSTALYCH PERYFERIOW
@@ -92,9 +88,9 @@ void loop() {
   if(currentTime - prevTime >= READ_REFRESH_TIME )              // jesli minelo [READ_REFRESH_TIME] ->
   {
     prevTime = currentTime;
-    asdf.manage_input();                                             // zarzadzaj wejsciami
-    asdf.manage_output();                                            // zarzadzaj wyjsciami
-    asdf.manage_zworki();                                            // zarzadzaj zworkami adresowymi
+    odbiornik.manage_input();                                             // zarzadzaj wejsciami
+    odbiornik.manage_output();                                            // zarzadzaj wyjsciami
+    odbiornik.manage_zworki();                                            // zarzadzaj zworkami adresowymi
   }
 
   #ifdef DEBUGSERIAL
@@ -102,7 +98,8 @@ void loop() {
     {
       prev_debug_time = currentTime;
       //debug_print_output();
-      digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN));
+      odbiornik.setInfoLED(!odbiornik.getInfoLED());
+      //digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN));
     }
   #endif
 }
