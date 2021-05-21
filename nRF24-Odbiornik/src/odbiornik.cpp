@@ -44,6 +44,13 @@ void Odbiornik::init()
   digitalWriteFast(OUTPIN7, HIGH);
 
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
+
+  for(int i=0; i<outpin_array_len; ++i) // zerujemy
+  {
+    output_strobo[i] = false;
+    output_active[i] = false;
+  }
+
 }
 
 void Odbiornik::initRF()
@@ -106,7 +113,7 @@ void Odbiornik::set_output_strobo(Zrodlo source, bool state, int pin=10)
   {
     input_source[pin] = true;
   }
-  output_strobo[pin] = true;
+  output_strobo[pin] = state;
   output_active[pin] = state;
   prevOutputTime[pin] = millis();
 }
@@ -157,12 +164,13 @@ void Odbiornik::manage_input()
 
       //output_active[0] = true;                          // Obecnie klient potrzebuje wylacznie jednego przekaznika
       set_output(EGwizdek, true, 0);
-      //set_output_strobo(1);
+      set_output_strobo(EGwizdek, true, 1);
     }
     // Uzywane tylko gdy gwizdek jest w trybie wysylania takze sygnalu wylaczajacego (domyslnie wysyla tylko wlaczenie sygnalu)
     else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
     {
       set_output(EGwizdek, false, 0);
+      set_output_strobo(EGwizdek, false, 1);
     }
     else if(nrfdata.getgwizd == 2)  // transmisja off : J.W. dotyczy drugiej metody
     {
@@ -186,7 +194,7 @@ void Odbiornik::manage_input()
         set_output(0,1,2,3,4,5,6,7);  // JESLI TESTMODE (EWRYFINK IS ILUMINEJTED!)
       #endif
     #elif defined (EASY_MODE)
-      //set_output(EPomocniczy, true, 1);
+      set_output(EPomocniczy, true, 0);
       set_output_strobo(EPomocniczy, true, 1);
     #else                           // JESLI KONFIGURACJA DOMYSLNA
       if( nrfdata.getgwizd == 11)

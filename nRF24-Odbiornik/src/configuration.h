@@ -11,7 +11,7 @@
 
 // KONFIGURACJA
 #define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
-#define OUTPUT_TIME 4000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
+#define OUTPUT_TIME 3000        // czas wlaczenia przekaznikow po otrzymaniu sygnalu z INPUT 1-4
 #define OUTPUT_GWIZD_TIME 2000  // czas wlaczenia przekaznikow po otrzymaniu GWIZDNIECIA
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
 #define INFO_LED_TIME     500   // czas swiecenia leda informacyjnego na pcb
