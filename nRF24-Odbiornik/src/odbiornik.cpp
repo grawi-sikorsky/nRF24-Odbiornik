@@ -114,7 +114,7 @@ void Odbiornik::set_output_strobo(Zrodlo source, bool state, int pin=10)
     input_source[pin] = true;
   }
   output_strobo[pin] = state;
-  output_active[pin] = state; //???????? chyba nie trzeba?
+  //output_active[pin] = state; //???????? chyba nie trzeba?
   prevOutputTime[pin] = millis();
 }
 
@@ -319,7 +319,7 @@ void Odbiornik::manage_output()
         output_strobo[i] = false; // wylaczamy strobo
       }
     }
-    else if(output_active[i] == false) // outpin == false
+    else if(output_active[i] == false || output_strobo[i] == false) // outpin == false
     {
       digitalWriteFast(outpin[i], HIGH);  // wylaczamy przekaznik OFF
     }
