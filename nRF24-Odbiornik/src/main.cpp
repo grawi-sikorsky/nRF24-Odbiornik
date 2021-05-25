@@ -66,14 +66,14 @@ void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
   if (radio.available())                                        // jesli dane sa dostepne ->
   {
-    odbiornik.setInfoLED(true);                                    // INFO LED ON
     radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz dane z nadajnika
+    odbiornik.setInfoLED(true);                                    // INFO LED ON
 
     #ifdef DEBUGSERIAL
       Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
-    odbiornik.manage_input();    // caly input ogarniemy w jednej funkcji
+    odbiornik.manage_input();                                   // ogolnie to leci manage input a za moment leci ponownie ponizej! TODO:
     led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->

@@ -114,7 +114,7 @@ void Odbiornik::set_output_strobo(Zrodlo source, bool state, int pin=10)
     input_source[pin] = true;
   }
   output_strobo[pin] = state;
-  output_active[pin] = state;
+  output_active[pin] = state; //???????? chyba nie trzeba?
   prevOutputTime[pin] = millis();
 }
 
@@ -283,7 +283,7 @@ void Odbiornik::manage_output()
   // JESLI NIE USTAWIA NA WYJSCIU OFF/HIGH
   for(int i=0; i <= outpin_array_len-1; i++)
   {
-    if(output_active[i] == true && output_strobo[i] == false)
+    if(output_active[i] == true && output_strobo[i] == false) // wyglada na to ze zawsze true bez wzgledu na drugi parametr... TODO!
     {
       digitalWriteFast(outpin[i], LOW); // uruchamiamy przekaznik ON
 
@@ -310,8 +310,8 @@ void Odbiornik::manage_output()
       if(outputCurrentTime - outputStroboTime[i] >= STROBO_FREQ)
       {
         digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
-        output_active[i] = false;
-        digitalWriteFast(outpin[i], !digitalReadFast(outpin[i])); // uruchamiamy przekaznik ON
+        output_active[i] = false; // ????????
+        digitalWriteFast(outpin[i], !digitalReadFast(outpin[i])); // odwracamy przekaznik
         outputStroboTime[i] = outputCurrentTime;
       }
       if(outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME)
