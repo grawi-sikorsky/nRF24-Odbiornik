@@ -153,7 +153,7 @@ bool Odbiornik::read_input_pins()
 // konfiguracja:
 // KOSZ LEWY POM && KOSZ LEWY CZER = KOSZ LEWY LED && PODLOGA LEWY LED
 // KOSZ PRAWY POM && KOSZ PRAWY CZER = KOSZ PRAWY LED && PODLOGA PRAWY LED
-void Odbiornik::manage_input()
+void Odbiornik::manage_input_rf()
 {
   // 1. Obsluga gwizdka
   if( read_input_gwizdek() == true )
@@ -226,7 +226,11 @@ void Odbiornik::manage_input()
 
     nrfdata.getgwizd = 2; // default state...
   }
+}
 
+// OBSLUGA WYLACZNIE WEJSC FIZYCZNYCH ODBIORNIKA
+void Odbiornik::manage_input_odb()
+{
   // 3. Obsluga wejsc fizycznych odbiornika
   if (read_input_pins() == true )  // jesli byla zmiana na wejsciach sprawdza kazde po kolei i przypisuje konkretne wyjscia 
   {
@@ -295,6 +299,7 @@ void Odbiornik::manage_output()
         prevOutputTime[i] = outputCurrentTime; // zeruj licznik
         output_active[i] = false; // flaga output na false
         input_source[i] = false; // info o wejsciu
+        nrfdata.getgwizd=0; // testowo
       }
 
       if((outputCurrentTime - gwizdTimeout_start_at >= OUTPUT_GWIZD_TIME) && input_source[i] == false)
@@ -302,6 +307,7 @@ void Odbiornik::manage_output()
         gwizdTimeout_start_at = outputCurrentTime;  // zeruj licznik
         output_active[i] = false;                   // flaga output na false
         input_source[i] = false;                    // info o wejsciu
+        nrfdata.getgwizd=0; // testowo
       }
     }
     else if(output_strobo[i] == true) // flaga strobo powinna wystarczyc? TODO
@@ -317,11 +323,16 @@ void Odbiornik::manage_output()
       if(outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME)
       {
         output_strobo[i] = false; // wylaczamy strobo
+        nrfdata.getgwizd=0;// testowo
       }
     }
     else if(output_active[i] == false || output_strobo[i] == false) // outpin == false
     {
       digitalWriteFast(outpin[i], HIGH);  // wylaczamy przekaznik OFF
+    }
+    else if(output_active[i]==false && output_strobo[i]==false)
+    {
+      nrfdata.getgwizd=0; // na wszelki wypadek gdyby nadajnik byl poza zasiegiem niet..
     }
   }
 }

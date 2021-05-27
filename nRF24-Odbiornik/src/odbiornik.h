@@ -97,7 +97,10 @@ class Odbiornik
     // konfiguracja:
     // KOSZ LEWY POM && KOSZ LEWY CZER = KOSZ LEWY LED && PODLOGA LEWY LED
     // KOSZ PRAWY POM && KOSZ PRAWY CZER = KOSZ PRAWY LED && PODLOGA PRAWY LED
-    void manage_input();
+    void manage_input_rf();
+
+    // Obsluga wejsc wylacznie fizycznych w odbiorniku
+    void manage_input_odb();
 
     // OBSLUGA WYJSC BAZUJE NA INFORMACJACH ZDOBYTYCH W MANAGE_INPUT()
     // USTAWIA STANY WYSOKIE I NISKIE W ZALEZNOSCI OD AKTYWNYCH FLAG Z TABLICY outPin_active[]
