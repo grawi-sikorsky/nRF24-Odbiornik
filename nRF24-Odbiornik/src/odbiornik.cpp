@@ -308,9 +308,9 @@ void Odbiornik::manage_output()
         //nrfdata.getgwizd=0; // testowo
       }
 
-      if((outputCurrentTime - gwizdTimeout_start_at >= OUTPUT_GWIZD_TIME) && input_source[i] == false) // OFF DLA GWIZDKA
+      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_GWIZD_TIME) && input_source[i] == false) // OFF DLA GWIZDKA
       {// problem! jesli mamy 2 odpalone gwizdkowe wyjscia to licznik jednego zeruje licznik drugiego
-        gwizdTimeout_start_at = outputCurrentTime;  // zeruj licznik
+        prevOutputTime[i] = outputCurrentTime;  // zeruj licznik
         output_active[i] = false;                   // flaga output na false
         input_source[i] = false;                    // info o wejsciu
         //nrfdata.getgwizd=0; // testowo
