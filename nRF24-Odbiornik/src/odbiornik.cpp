@@ -165,12 +165,16 @@ void Odbiornik::manage_input_rf()
       //output_active[0] = true;                          // Obecnie klient potrzebuje wylacznie jednego przekaznika
       set_output(EGwizdek, true, 0);
       set_output_strobo(EGwizdek, true, 1);
+      set_output(EGwizdek, true, 2);
+      set_output_strobo(EGwizdek, true, 3);
     }
     // Uzywane tylko gdy gwizdek jest w trybie wysylania takze sygnalu wylaczajacego (domyslnie wysyla tylko wlaczenie sygnalu)
     else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
     {
       set_output(EGwizdek, false, 0);
       set_output_strobo(EGwizdek, false, 1);
+      set_output(EGwizdek, false, 2);
+      set_output_strobo(EGwizdek, false, 3);
     }
     else if(nrfdata.getgwizd == 2)  // transmisja off : J.W. dotyczy drugiej metody
     {
@@ -196,6 +200,8 @@ void Odbiornik::manage_input_rf()
     #elif defined (EASY_MODE)
       set_output(EPomocniczy, true, 0);
       set_output_strobo(EPomocniczy, true, 1);
+      set_output(EPomocniczy, true, 2);
+      set_output_strobo(EPomocniczy, true, 3);
     #else                           // JESLI KONFIGURACJA DOMYSLNA
       if( nrfdata.getgwizd == 11)
       {
@@ -294,20 +300,20 @@ void Odbiornik::manage_output()
       // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
       // JESLI TAK WYLACZA WYJSCIE
       // JESLI NIE - NYC
-      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && input_source[i] == true) // DLA WEJSC FIZYCZNYCH I POMOCNICZEGO
+      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && input_source[i] == true) // OFF DLA WEJSC FIZYCZNYCH I POMOCNICZEGO
       {
         prevOutputTime[i] = outputCurrentTime; // zeruj licznik
         output_active[i] = false; // flaga output na false
         input_source[i] = false; // info o wejsciu
-        nrfdata.getgwizd=0; // testowo
+        //nrfdata.getgwizd=0; // testowo
       }
 
-      if((outputCurrentTime - gwizdTimeout_start_at >= OUTPUT_GWIZD_TIME) && input_source[i] == false)
-      {
+      if((outputCurrentTime - gwizdTimeout_start_at >= OUTPUT_GWIZD_TIME) && input_source[i] == false) // OFF DLA GWIZDKA
+      {// problem! jesli mamy 2 odpalone gwizdkowe wyjscia to licznik jednego zeruje licznik drugiego
         gwizdTimeout_start_at = outputCurrentTime;  // zeruj licznik
         output_active[i] = false;                   // flaga output na false
         input_source[i] = false;                    // info o wejsciu
-        nrfdata.getgwizd=0; // testowo
+        //nrfdata.getgwizd=0; // testowo
       }
     }
     else if(output_strobo[i] == true) // flaga strobo powinna wystarczyc? TODO
@@ -323,7 +329,7 @@ void Odbiornik::manage_output()
       if(outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME)
       {
         output_strobo[i] = false; // wylaczamy strobo
-        nrfdata.getgwizd=0;// testowo
+        //nrfdata.getgwizd=0;// testowo
       }
     }
     else if(output_active[i] == false || output_strobo[i] == false) // outpin == false
@@ -332,7 +338,7 @@ void Odbiornik::manage_output()
     }
     else if(output_active[i]==false && output_strobo[i]==false)
     {
-      nrfdata.getgwizd=0; // na wszelki wypadek gdyby nadajnik byl poza zasiegiem niet..
+      //nrfdata.getgwizd=0; // na wszelki wypadek gdyby nadajnik byl poza zasiegiem niet..
     }
   }
 }
