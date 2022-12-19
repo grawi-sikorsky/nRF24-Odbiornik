@@ -3,12 +3,14 @@
 #include "configuration.h"
 
 void Relay::activate( int timeMS, int lightType, int evoker ){
-    this->setActiveTimeMS(timeMS);
-    this->setLightType(lightType);
-    this->setEvoker(evoker);
-    this->isActive = true;
-    this->activateTime = millis();
-    digitalWriteFast(this->relayNumber, LOW);
+    if(lightType == Solid){
+        this->setActiveTimeMS(timeMS);
+        this->setLightType(lightType);
+        this->setEvoker(evoker);
+        this->isActive = true;
+        this->activateTime = millis();
+        digitalWriteFast(this->relayNumber, LOW);
+    }
 
     Serial.println("Relay: Activate");
     Serial.print("timeMS: "); Serial.println(timeMS);
@@ -18,10 +20,26 @@ void Relay::activate( int timeMS, int lightType, int evoker ){
     Serial.print("activateMillis: "); Serial.println(this->activateTime);
 }
 
+void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
+    if(lightType == Blink && isActive == false){
+        this->setActiveTimeMS(timeMS);
+        this->setLightType(lightType);
+        this->setBlinkTimeMS(blinkTime);
+        this->setEvoker(evoker);
+        this->isActive = true;
+        this->activateTime = millis();
+        digitalWriteFast(this->relayNumber, LOW);
+    }
+    else if ( isActive == true){
+        this->activateTime = millis();
+    }
+}
+
 void Relay::deactivate(){
     Serial.println("Deactivate");
     Serial.print("deac millis: "); Serial.println(millis());
     Serial.print("time elapsed: "); Serial.println(millis() - this->activateTime);
+    Serial.print("relayType: "); Serial.println(this->getLightType());
     this->isActive = false;
     digitalWriteFast(this->relayNumber, HIGH);
 }

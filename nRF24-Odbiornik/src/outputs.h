@@ -9,5 +9,6 @@ public:
     void setupOutputs();
     void disableAllOutputs();
     void manageTimeouts();
+    void manageBlinks();
 
 };
