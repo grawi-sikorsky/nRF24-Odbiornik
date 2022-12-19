@@ -70,7 +70,7 @@ void loop() {
     odbiornik.setInfoLED(true);                                    // INFO LED ON
 
     #ifdef DEBUGSERIAL
-      Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
+      Serial.print("GwizdOn: "); Serial.println(nrfdata.getgwizd);
     #endif
 
     odbiornik.manage_input_rf();

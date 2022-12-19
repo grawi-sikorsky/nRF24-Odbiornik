@@ -4,7 +4,7 @@ class Outputs
 {
 
 public:
-    Relay relays[7];
+    Relay relays[6];
 
     void setupOutputs();
     void disableAllOutputs();

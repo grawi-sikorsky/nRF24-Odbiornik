@@ -30,7 +30,7 @@ private:
     int getActiveTimeMS() const { return activeTimeMS; }
     void setActiveTimeMS(int activeTimeMS_) { activeTimeMS = activeTimeMS_; }
 
-    bool getIsActive() const { return isActive; }
+
     void setIsActive(bool isActive_) { isActive = isActive_; }
 
     time_t getActivateTime() const { return activateTime; }
@@ -48,7 +48,8 @@ private:
 public:
 
     void setRelayNumber(int relayNumber_) { relayNumber = relayNumber_; }
-    
+    bool getIsActive() const { return isActive; }
+
     void activate(int timeMS, int lightType, int evoker);
     void deactivate();
     bool isTimeout();

@@ -54,6 +54,7 @@ void Odbiornik::init()
     output_active[i] = false;
   }
 
+  outputs.setupOutputs();
 }
 
 void Odbiornik::initRF()
@@ -169,14 +170,16 @@ void Odbiornik::manage_input_rf()
       // set_output_strobo(EGwizdek, true, 1);
       //set_output(EGwizdek, true, 2);
       //set_output_strobo(EGwizdek, true, 3);
-
-      outputs.relays->activate(2000, 0, 0);
+      Serial.println("inside readInputgwizdek()");
+      outputs.relays[0].activate(2000, 0, 0);
+      outputs.relays[1].activate(3000, 0, 0);
+      outputs.relays[2].activate(4000, 0, 0);
     }
     // Uzywane tylko gdy gwizdek jest w trybie wysylania takze sygnalu wylaczajacego (domyslnie wysyla tylko wlaczenie sygnalu)
     else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
     {
-      set_output(EGwizdek, false, 0);
-      set_output_strobo(EGwizdek, false, 1);
+      // set_output(EGwizdek, false, 0);
+      // set_output_strobo(EGwizdek, false, 1);
       //set_output(EGwizdek, false, 2);
       //set_output_strobo(EGwizdek, false, 3);
     }

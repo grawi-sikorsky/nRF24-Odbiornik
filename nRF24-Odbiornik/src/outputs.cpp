@@ -11,14 +11,14 @@ void Outputs::setupOutputs(){
 }
 
 void Outputs::disableAllOutputs(){
-    for (int i = 0; i<8; i++){
+    for (int i = 0; i<6; i++){
         relays[i].deactivate();
     }
 }
 
 void Outputs::manageTimeouts(){
-    for (int i = 0; i<8; i++){
-        if(relays[i].isTimeout()){
+    for (int i = 0; i<6; i++){
+        if(relays[i].isTimeout() && relays[i].getIsActive()){
             relays[i].deactivate();
         }
     }
