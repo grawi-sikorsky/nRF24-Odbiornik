@@ -1,8 +1,11 @@
+#include <time.h>
+
 class Relay
 {
 private:
     int activeTimeMS = 0;
     bool isActive = false;
+    time_t activateTime;
 
     enum ElightType
     {
@@ -19,17 +22,35 @@ private:
     };
     int lightType;
     int evoker;
-
     int relayNumber = 0;
 
+    void changePinState();
+
+    // GETTERS SETTERS
+    int getActiveTimeMS() const { return activeTimeMS; }
+    void setActiveTimeMS(int activeTimeMS_) { activeTimeMS = activeTimeMS_; }
+
+    bool getIsActive() const { return isActive; }
+    void setIsActive(bool isActive_) { isActive = isActive_; }
+
+    time_t getActivateTime() const { return activateTime; }
+    void setActivateTime(const time_t &activateTime_) { activateTime = activateTime_; }
+
+    int getLightType() const { return lightType; }
+    void setLightType(int lightType_) { lightType = lightType_; }
+
+    int getEvoker() const { return evoker; }
+    void setEvoker(int evoker_) { evoker = evoker_; }
+
+    int getRelayNumber() const { return relayNumber; }
+
+
 public:
-    void setActiveTimeMS(int timeMS) { this->activeTimeMS = timeMS; };
-    void setEvoker(int evo) { this->evoker = evo; };
-    void setLightType(int lightType) { this->lightType = lightType; };
-    int getActiveTimeMS() { return this->activeTimeMS; };
-    int getEvoker() { return this->evoker; };
-    int getLightType() { return this->lightType; };
+
+    void setRelayNumber(int relayNumber_) { relayNumber = relayNumber_; }
     
-    void activate(int, int, int);
+    void activate(int timeMS, int lightType, int evoker);
     void deactivate();
+    bool isTimeout();
+
 };

@@ -165,10 +165,12 @@ void Odbiornik::manage_input_rf()
     {
       gwizdTimeout_start_at = millis();                        // ustaw czas ostatniego gwizdniecia
 
-      set_output(EGwizdek, true, 0);
-      set_output_strobo(EGwizdek, true, 1);
+      // set_output(EGwizdek, true, 0);
+      // set_output_strobo(EGwizdek, true, 1);
       //set_output(EGwizdek, true, 2);
       //set_output_strobo(EGwizdek, true, 3);
+
+      outputs.relays->activate(2000, 0, 0);
     }
     // Uzywane tylko gdy gwizdek jest w trybie wysylania takze sygnalu wylaczajacego (domyslnie wysyla tylko wlaczenie sygnalu)
     else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
@@ -293,56 +295,59 @@ void Odbiornik::manage_output()
   // SPRAWDZA CZY FLAGA ACTIVE JEST AKTYWNA POD KAZDYM PINEM OUT
   // JESLI TAK USTAWIA NA WYJSCIU ON/LOW
   // JESLI NIE USTAWIA NA WYJSCIU OFF/HIGH
-  for(int i=0; i <= outpin_array_len-1; i++)
-  {
-    if(output_active[i] == true && output_strobo[i] == false) // wyglada na to ze zawsze true bez wzgledu na drugi parametr... TODO!
-    {
-      digitalWriteFast(outpin[i], LOW); // uruchamiamy przekaznik ON
 
-      // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
-      // JESLI TAK WYLACZA WYJSCIE
-      // JESLI NIE - NYC
-      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && input_source[i] == true) // OFF DLA WEJSC FIZYCZNYCH I POMOCNICZEGO
-      {
-        prevOutputTime[i] = outputCurrentTime; // zeruj licznik
-        output_active[i] = false; // flaga output na false
-        input_source[i] = false; // info o wejsciu
-        //nrfdata.getgwizd=0; // testowo
-      }
+  // for(int i=0; i <= outpin_array_len-1; i++)
+  // {
+  //   if(output_active[i] == true && output_strobo[i] == false) // wyglada na to ze zawsze true bez wzgledu na drugi parametr... TODO!
+  //   {
+  //     digitalWriteFast(outpin[i], LOW); // uruchamiamy przekaznik ON
 
-      if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_GWIZD_TIME) && input_source[i] == false) // OFF DLA GWIZDKA
-      {// problem! jesli mamy 2 odpalone gwizdkowe wyjscia to licznik jednego zeruje licznik drugiego
-        prevOutputTime[i] = outputCurrentTime;  // zeruj licznik
-        output_active[i] = false;                   // flaga output na false
-        input_source[i] = false;                    // info o wejsciu
-        //nrfdata.getgwizd=0; // testowo
-      }
-    }
-    else if(output_strobo[i] == true) // flaga strobo powinna wystarczyc? TODO
-    {
+  //     // SPRAWDZA CZY CZAS ZOSTAL PRZEKROCZONY
+  //     // JESLI TAK WYLACZA WYJSCIE
+  //     // JESLI NIE - NYC
+  //     if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME) && input_source[i] == true) // OFF DLA WEJSC FIZYCZNYCH I POMOCNICZEGO
+  //     {
+  //       prevOutputTime[i] = outputCurrentTime; // zeruj licznik
+  //       output_active[i] = false; // flaga output na false
+  //       input_source[i] = false; // info o wejsciu
+  //       //nrfdata.getgwizd=0; // testowo
+  //     }
 
-      if(outputCurrentTime - outputStroboTime[i] >= STROBO_FREQ)
-      {
-        digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
-        output_active[i] = false; // ????????
-        digitalWriteFast(outpin[i], !digitalReadFast(outpin[i])); // odwracamy przekaznik
-        outputStroboTime[i] = outputCurrentTime;
-      }
-      if(outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME)
-      {
-        output_strobo[i] = false; // wylaczamy strobo
-        //nrfdata.getgwizd=0;// testowo
-      }
-    }
-    else if(output_active[i] == false || output_strobo[i] == false) // outpin == false
-    {
-      digitalWriteFast(outpin[i], HIGH);  // wylaczamy przekaznik OFF
-    }
-    else if(output_active[i]==false && output_strobo[i]==false)
-    {
-      //nrfdata.getgwizd=0; // na wszelki wypadek gdyby nadajnik byl poza zasiegiem niet..
-    }
-  }
+  //     if((outputCurrentTime - prevOutputTime[i] >= OUTPUT_GWIZD_TIME) && input_source[i] == false) // OFF DLA GWIZDKA
+  //     {// problem! jesli mamy 2 odpalone gwizdkowe wyjscia to licznik jednego zeruje licznik drugiego
+  //       prevOutputTime[i] = outputCurrentTime;  // zeruj licznik
+  //       output_active[i] = false;                   // flaga output na false
+  //       input_source[i] = false;                    // info o wejsciu
+  //       //nrfdata.getgwizd=0; // testowo
+  //     }
+  //   }
+  //   else if(output_strobo[i] == true) // flaga strobo powinna wystarczyc? TODO
+  //   {
+
+  //     if(outputCurrentTime - outputStroboTime[i] >= STROBO_FREQ)
+  //     {
+  //       digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
+  //       output_active[i] = false; // ????????
+  //       digitalWriteFast(outpin[i], !digitalReadFast(outpin[i])); // odwracamy przekaznik
+  //       outputStroboTime[i] = outputCurrentTime;
+  //     }
+  //     if(outputCurrentTime - prevOutputTime[i] >= OUTPUT_TIME)
+  //     {
+  //       output_strobo[i] = false; // wylaczamy strobo
+  //       //nrfdata.getgwizd=0;// testowo
+  //     }
+  //   }
+  //   else if(output_active[i] == false || output_strobo[i] == false) // outpin == false
+  //   {
+  //     digitalWriteFast(outpin[i], HIGH);  // wylaczamy przekaznik OFF
+  //   }
+  //   else if(output_active[i]==false && output_strobo[i]==false)
+  //   {
+  //     //nrfdata.getgwizd=0; // na wszelki wypadek gdyby nadajnik byl poza zasiegiem niet..
+  //   }
+  // }
+
+  outputs.manageTimeouts();
 }
 
 
