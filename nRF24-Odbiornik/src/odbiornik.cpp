@@ -1,7 +1,10 @@
 #include "../src/odbiornik.h"
+#include "../src/outputs.h"
 
 extern RF24 radio; // CE, CSN
 extern outdata nrfdata;
+
+Outputs outputs;
 
 bool Odbiornik::getActive_output_pin(int i)
 {
@@ -162,7 +165,6 @@ void Odbiornik::manage_input_rf()
     {
       gwizdTimeout_start_at = millis();                        // ustaw czas ostatniego gwizdniecia
 
-      //output_active[0] = true;                          // Obecnie klient potrzebuje wylacznie jednego przekaznika
       set_output(EGwizdek, true, 0);
       set_output_strobo(EGwizdek, true, 1);
       //set_output(EGwizdek, true, 2);

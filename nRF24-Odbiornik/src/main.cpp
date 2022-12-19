@@ -73,7 +73,7 @@ void loop() {
       Serial.print("AVAIL GwizdON: "); Serial.println(nrfdata.getgwizd);
     #endif
 
-    odbiornik.manage_input_rf();                                   // ogolnie to leci manage input a za moment leci ponownie ponizej! TODO:
+    odbiornik.manage_input_rf();
     led_time = millis();
   }
   else                                                          // jesli danych z nRF24 brak ->
@@ -88,7 +88,7 @@ void loop() {
   if(currentTime - prevTime >= READ_REFRESH_TIME )              // jesli minelo [READ_REFRESH_TIME] ->
   {
     prevTime = currentTime;
-    odbiornik.manage_input_odb();                                         // zarzadzaj wejsciami
+    odbiornik.manage_input_odb();                                         // zarzadzaj wejsciami fizycznymi
     odbiornik.manage_output();                                            // zarzadzaj wyjsciami
     odbiornik.manage_zworki();                                            // zarzadzaj zworkami adresowymi
   }
