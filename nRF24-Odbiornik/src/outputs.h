@@ -3,12 +3,13 @@
 class Outputs
 {
 
-public:
-    Relay relays[6];
+    public:
+        int output_size;
+        Relay relays[6];
 
-    void setupOutputs();
-    void disableAllOutputs();
-    void manageTimeouts();
-    void manageBlinks();
+        void setupOutputs();
+        void disableAllOutputs();
+        void manageTimeouts();
+        void manageBlinks();
 
 };

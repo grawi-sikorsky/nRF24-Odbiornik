@@ -171,6 +171,8 @@ void Odbiornik::manage_input_rf()
       outputs.relays[1].activate(3000, 0, 0);
       outputs.relays[2].activate(4000, 0, 0);
       outputs.relays[3].activate(5000, 1, 400, 0);
+      outputs.relays[4].activate(2000, 1, 200, 0);
+      outputs.relays[5].activate(6000, 1, 500, 0);
     }
     // Uzywane tylko gdy gwizdek jest w trybie wysylania takze sygnalu wylaczajacego (domyslnie wysyla tylko wlaczenie sygnalu)
     else if(nrfdata.getgwizd == 0)    // JESLI GWIZDEK WYSLAL SYGNAL O SPADKU CISNIENIA - WYLACZAMY PRZEKAZNIKI
