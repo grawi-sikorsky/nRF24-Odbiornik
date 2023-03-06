@@ -166,10 +166,6 @@ void Odbiornik::manage_input_rf()
     {
       gwizdTimeout_start_at = millis();                        // ustaw czas ostatniego gwizdniecia
 
-      // set_output(EGwizdek, true, 0);
-      // set_output_strobo(EGwizdek, true, 1);
-      //set_output(EGwizdek, true, 2);
-      //set_output_strobo(EGwizdek, true, 3);
       Serial.println("inside readInputgwizdek()");
       outputs.relays[0].activate(2000, 0, 0);
       outputs.relays[1].activate(3000, 0, 0);
