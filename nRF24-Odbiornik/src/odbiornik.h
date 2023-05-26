@@ -1,4 +1,5 @@
 #include "configuration.h"
+#include <ArduinoJson.h>
 
 static byte address[][5] = {"Odb0","Odb1","Odb2","Odb3","Odb4","Odb5","Odb6","Odb7"};  // dostepne adresy odbiornikow zgodnie ze zworkami 1-3
 
@@ -8,6 +9,11 @@ struct WhistleData
   int     getgwizd;
   float   raw;
   float   avg;
+};
+
+struct ConfigData{
+  int num;
+  byte address[];
 };
 
 

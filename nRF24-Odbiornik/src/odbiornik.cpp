@@ -3,6 +3,7 @@
 
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
+extern char incomingData[2048];
 
 Outputs outputs;
 
@@ -103,11 +104,29 @@ bool Odbiornik::isPhysicalSignal()
   else return false;                                    // jesli bez zmian -> FALSE
 }
 
+void test(){
+  DynamicJsonDocument doc(2048);
+  DeserializationError error = deserializeJson(doc, incomingData);
+
+  if (error) {
+    outputs.relays[5].activate(1000, ElightType::Solid, Eevoker::Helper);
+    return;
+  }
+
+  serializeJsonPretty(doc, Serial);
+  Serial.println();
+  String dwa = doc["dwa"];
+  Serial.println(dwa);
+  if(dwa == "cwaj"){
+    outputs.relays[1].activate(2000, ElightType::Blink, 200, Eevoker::Helper);
+  }
+}
+
 void Odbiornik::manageInputWireless()
 {
   if(isWhistleSignal())
   {
-    outputs.relays[0].activate(2000, ElightType::Solid, 0);
+    outputs.relays[0].activate(3000, ElightType::Solid, 0);
     // outputs.relays[1].activate(3000, ElightType::Solid, 0);
     // outputs.relays[2].activate(4000, ElightType::Solid, 0);
     // outputs.relays[3].activate(5000, ElightType::Blink, 400, 0);
@@ -115,12 +134,16 @@ void Odbiornik::manageInputWireless()
     // outputs.relays[5].activate(6000, ElightType::Blink, 500, 0);
   }
   
-  if (isHelperSignal() == true )
+  if (isHelperSignal())
   {
     outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Helper);
     whistleData.getgwizd = 2; // default state...
   }
+
+  test();
 }
+
+
 
 void Odbiornik::manageInputPhysical()
 {

@@ -9,13 +9,14 @@ Odbiornik odbiornik;
 RF24 radio(9, 10); // CE, CSN
 WhistleData whistleData;
 
-time_t currentTime, prevTime = 0;                               // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
+char incomingData[2048];
+
+time_t currentTime, prevTime = 0;
 
 #ifdef DEBUGSERIAL
   time_t lastDebugTime;
   #define SERIAL_DEBUG_FREQ 3000
 #endif
-
 
 // SETUP
 void setup() 
@@ -38,7 +39,10 @@ void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
   if (radio.available())
   {
+    radio.read(&incomingData, sizeof(incomingData));
     radio.read(&whistleData, sizeof(whistleData));
+    
+
     odbiornik.setLEDstate(true);
 
     #ifdef DEBUGSERIAL
