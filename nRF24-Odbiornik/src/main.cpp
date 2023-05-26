@@ -7,40 +7,14 @@
 
 Odbiornik odbiornik;
 RF24 radio(9, 10); // CE, CSN
-outdata nrfdata;
+WhistleData whistleData;
 
-time_t led_time;                                                // TIMER DLA LED
 time_t currentTime, prevTime = 0;                               // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
 
 #ifdef DEBUGSERIAL
   time_t prev_debug_time;
   #define SERIAL_DEBUG_FREQ 3000
 #endif
-
-/*
-// DEBUG
-void debug_print_output()
-{
-  Serial.print("nrfdata.getgwizd: "); Serial.println(nrfdata.getgwizd);
-  Serial.print("outputCurrenttime: "); Serial.println(outputCurrentTime);
-  for (int i = 0; i < outpin_array_len; i++)
-  {
-    Serial.print("outPin_active[");Serial.print(i); Serial.print("]: "); Serial.println(outPin_active[i]);
-    Serial.print("prevOutputTime[");Serial.print(i); Serial.print("]: "); Serial.println(prevOutputTime[i]);
-    Serial.print("outPin_input[");Serial.print(i); Serial.print("]: "); Serial.println(outPin_input[i]);
-  }
-    Serial.print("gwizdON: "); Serial.println(gwizd_on);
-    Serial.print("timeout_start_at: "); Serial.println(timeout_start_at);
-
-    //setRFaddress();
-    for (int i = 0; i < 5; i++)
-    {
-      Serial.print((char)address[address_nr][i]);
-    }
-    Serial.println();
-    Serial.println("===================");
-}
-*/
 
 
 // SETUP
@@ -51,55 +25,50 @@ void setup()
   #endif
 
   odbiornik.init();
-
-  odbiornik.manage_zworki();
-
+  odbiornik.manageZworki();
   odbiornik.initRF();
 
   #ifdef DEBUGSERIAL
-    Serial.println("SETUP:OK \n");
+    Serial.println("SETUP: OK! \n");
   #endif
 }
 
 // LOOP
 void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
-  if (radio.available())                                        // jesli dane sa dostepne ->
+  if (radio.available())
   {
-    radio.read(&nrfdata, sizeof(nrfdata));                    // pobierz dane z nadajnika
-    odbiornik.setInfoLED(true);                                    // INFO LED ON
+    radio.read(&whistleData, sizeof(whistleData));
+    odbiornik.setLEDstate(true);
 
     #ifdef DEBUGSERIAL
-      Serial.print("GwizdOn: "); Serial.println(nrfdata.getgwizd);
+      Serial.print("GwizdOn: "); Serial.println(whistleData.getgwizd);
     #endif
 
-    odbiornik.manage_input_rf();
-    led_time = millis();
-  }
-  else                                                          // jesli danych z nRF24 brak ->
-  {
-    if(millis() - led_time >= INFO_LED_TIME) odbiornik.setInfoLED(false); //TIMEOUT DLA INFO LEDA
+    odbiornik.manageInputWireless();
+    odbiornik.setLedActive();
   }
 
-  // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE I NAD. POMOCNICZY)
-  // OBSLUGA POZOSTALYCH PERYFERIOW
+
+  // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE)
   currentTime = millis();                                       // pobierz czas do odliczania interwalow sprawdzania WEJSC
 
   if(currentTime - prevTime >= READ_REFRESH_TIME )              // jesli minelo [READ_REFRESH_TIME] ->
   {
     prevTime = currentTime;
-    odbiornik.manage_input_odb();                                         // zarzadzaj wejsciami fizycznymi
-    odbiornik.manage_output();                                            // zarzadzaj wyjsciami
-    odbiornik.manage_zworki();                                            // zarzadzaj zworkami adresowymi
+    odbiornik.manageInputPhysical();
+    odbiornik.manageOutputs();
+    odbiornik.manageZworki();
+    odbiornik.manageLed();
+    
   }
 
   #ifdef DEBUGSERIAL
     if(currentTime - prev_debug_time >= SERIAL_DEBUG_FREQ )     // jesli minelo [SERIAL_DEBUG_FREQ] ->
     {
       prev_debug_time = currentTime;
-      //debug_print_output();
-      odbiornik.setInfoLED(!odbiornik.getInfoLED());
-      //digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN));
+      odbiornik.setLEDstate(!odbiornik.getLEDstate());
     }
   #endif
+
 }

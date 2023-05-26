@@ -2,7 +2,6 @@
 
 class Outputs
 {
-
     public:
         int output_size;
         Relay relays[6];

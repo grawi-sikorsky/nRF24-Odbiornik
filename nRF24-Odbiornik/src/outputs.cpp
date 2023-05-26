@@ -40,12 +40,12 @@ void Outputs::manageBlinks(){
     for (int i = 0; i < output_size; i++){
         if(relays[i].getLightType() == Blink && relays[i].getIsActive())
         {
-            if(millis() - relays[i].getBlinkTime() >= relays[i].getBlinkTimeMS())
+            if(millis() - relays[i].getLastBlinkTime() >= relays[i].getBlinkTimeMS())
             {
                 digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
                 digitalWriteFast(relays[i].getRelayNumber(), !digitalReadFast(relays[i].getRelayNumber())); // odwracamy przekaznik
 
-                relays[i].setBlinkTime( millis() );
+                relays[i].setLastBlinkTime( millis() );
             }
             else{
 

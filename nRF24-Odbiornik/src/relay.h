@@ -10,9 +10,9 @@ enum ElightType
 
 enum Eevoker
 {
-    Gwizdek,
-    Pomocniczy,
-    Fizyczne
+    Whistle,
+    Helper,
+    Physical
 };
 
 class Relay
@@ -21,7 +21,7 @@ private:
     int activeTimeMS = 0;
     time_t activateTime;
     int blinkTimeMS = 0;
-    time_t blinkTime;
+    time_t lastBlinkTime;
 
     bool isActive = false;
     int lightType;
@@ -54,11 +54,10 @@ public:
     int getBlinkTimeMS() const { return blinkTimeMS; }
     void setBlinkTimeMS(int blinkTimeMS_) { blinkTimeMS = blinkTimeMS_; }
 
-    time_t getBlinkTime() const { return blinkTime; }
-    void setBlinkTime(const time_t &blinkTime_) { blinkTime = blinkTime_; }
+    time_t getLastBlinkTime() const { return lastBlinkTime; }
+    void setLastBlinkTime(const time_t &lastBlinkTime_) { lastBlinkTime = lastBlinkTime_; }
 
     int getRelayNumber() const { return relayNumber; }
-
 
 
     void activate(int timeMS, int lightType, int evoker);

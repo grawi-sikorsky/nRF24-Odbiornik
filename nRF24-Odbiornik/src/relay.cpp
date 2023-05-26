@@ -12,12 +12,14 @@ void Relay::activate( int timeMS, int lightType, int evoker ){
         digitalWriteFast(this->relayNumber, LOW);
     }
 
-    Serial.println("Relay: Activate");
-    Serial.print("timeMS: "); Serial.println(timeMS);
-    Serial.print("lightType: "); Serial.println(lightType);
-    Serial.print("evoker: "); Serial.println(evoker);
-    Serial.print("relayPin: "); Serial.println(relayNumber);
-    Serial.print("activateMillis: "); Serial.println(this->activateTime);
+    #ifdef DEBUGSERIAL
+        Serial.println("Relay: Activate");
+        Serial.print("timeMS: "); Serial.println(timeMS);
+        Serial.print("lightType: "); Serial.println(lightType);
+        Serial.print("evoker: "); Serial.println(evoker);
+        Serial.print("relayPin: "); Serial.println(relayNumber);
+        Serial.print("activateMillis: "); Serial.println(this->activateTime);
+    #endif
 }
 
 void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
@@ -36,10 +38,12 @@ void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
 }
 
 void Relay::deactivate(){
-    Serial.println("Deactivate");
-    Serial.print("deac millis: "); Serial.println(millis());
-    Serial.print("time elapsed: "); Serial.println(millis() - this->activateTime);
-    Serial.print("relayType: "); Serial.println(this->getLightType());
+    #ifdef DEBUGSERIAL
+        Serial.println("Deactivate");
+        Serial.print("deac millis: "); Serial.println(millis());
+        Serial.print("time elapsed: "); Serial.println(millis() - this->activateTime);
+        Serial.print("relayType: "); Serial.println(this->getLightType());
+    #endif
     this->isActive = false;
     digitalWriteFast(this->relayNumber, HIGH);
 }
@@ -47,7 +51,3 @@ void Relay::deactivate(){
 bool Relay::isTimeout(){
     return (millis() - this->activateTime) >= this->activeTimeMS;
 }
-
-// void Relay::changePinState(int pinNumber){
-//     digitalWriteFast(pinNumber, LOW); // uruchamiamy przekaznik ON
-// }
