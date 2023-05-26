@@ -12,7 +12,7 @@ WhistleData whistleData;
 time_t currentTime, prevTime = 0;                               // TIMER WEJSC INPUT - READ_REFRESH_TIME - 100 ms
 
 #ifdef DEBUGSERIAL
-  time_t prev_debug_time;
+  time_t lastDebugTime;
   #define SERIAL_DEBUG_FREQ 3000
 #endif
 
@@ -51,9 +51,9 @@ void loop() {
 
 
   // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE)
-  currentTime = millis();                                       // pobierz czas do odliczania interwalow sprawdzania WEJSC
+  currentTime = millis();
 
-  if(currentTime - prevTime >= READ_REFRESH_TIME )              // jesli minelo [READ_REFRESH_TIME] ->
+  if(currentTime - prevTime >= READ_REFRESH_TIME )
   {
     prevTime = currentTime;
     odbiornik.manageInputPhysical();
@@ -64,9 +64,9 @@ void loop() {
   }
 
   #ifdef DEBUGSERIAL
-    if(currentTime - prev_debug_time >= SERIAL_DEBUG_FREQ )     // jesli minelo [SERIAL_DEBUG_FREQ] ->
+    if(currentTime - lastDebugTime >= SERIAL_DEBUG_FREQ )
     {
-      prev_debug_time = currentTime;
+      lastDebugTime = currentTime;
       odbiornik.setLEDstate(!odbiornik.getLEDstate());
     }
   #endif

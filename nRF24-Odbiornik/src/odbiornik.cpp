@@ -108,16 +108,16 @@ void Odbiornik::manageInputWireless()
   if(isWhistleSignal())
   {
     outputs.relays[0].activate(2000, ElightType::Solid, 0);
-    outputs.relays[1].activate(3000, ElightType::Solid, 0);
-    outputs.relays[2].activate(4000, ElightType::Solid, 0);
-    outputs.relays[3].activate(5000, ElightType::Blink, 400, 0);
-    outputs.relays[4].activate(2000, ElightType::Blink, 200, 0);
-    outputs.relays[5].activate(6000, ElightType::Blink, 500, 0);
+    // outputs.relays[1].activate(3000, ElightType::Solid, 0);
+    // outputs.relays[2].activate(4000, ElightType::Solid, 0);
+    // outputs.relays[3].activate(5000, ElightType::Blink, 400, 0);
+    // outputs.relays[4].activate(2000, ElightType::Blink, 200, 0);
+    // outputs.relays[5].activate(6000, ElightType::Blink, 500, 0);
   }
   
   if (isHelperSignal() == true )
   {
-    //
+    outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Helper);
     whistleData.getgwizd = 2; // default state...
   }
 }
