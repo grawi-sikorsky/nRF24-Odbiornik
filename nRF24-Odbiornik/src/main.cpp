@@ -7,9 +7,10 @@
 
 Odbiornik odbiornik;
 RF24 radio(9, 10); // CE, CSN
+uint8_t pipeWhistle = 1;
+uint8_t pipeSettings = 2;
 WhistleData whistleData;
-
-char incomingData[2048];
+SettingsData settingsData;
 
 time_t currentTime, prevTime = 0;
 
@@ -30,27 +31,29 @@ void setup()
   odbiornik.initRF();
 
   #ifdef DEBUGSERIAL
-    Serial.println("SETUP: OK! \n");
+    Serial.println(F("SETUP: OK! \n"));
   #endif
 }
 
 // LOOP
 void loop() {
   // 1. SPRAWDZ TRANSMISJE RADIOWA OD GWIZDKA:
-  if (radio.available())
+  if (radio.available(&pipeWhistle))
   {
-    radio.read(&incomingData, sizeof(incomingData));
     radio.read(&whistleData, sizeof(whistleData));
-    
 
     odbiornik.setLEDstate(true);
 
     #ifdef DEBUGSERIAL
-      Serial.print("GwizdOn: "); Serial.println(whistleData.getgwizd);
+      Serial.print(F("Gwizd: ")); Serial.println(whistleData.getgwizd);
     #endif
 
     odbiornik.manageInputWireless();
     odbiornik.setLedActive();
+  }
+  if(radio.available(&pipeSettings)){
+    radio.read(&settingsData, sizeof(settingsData));
+    odbiornik.test();
   }
 
 

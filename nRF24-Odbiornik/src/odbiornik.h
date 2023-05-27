@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "configuration.h"
 #include <ArduinoJson.h>
 
@@ -11,11 +12,34 @@ struct WhistleData
   float   avg;
 };
 
-struct ConfigData{
-  int num;
-  byte address[];
+struct SettingsData
+{
+  uint8_t relay0type;
+  uint8_t relay1type;
+  uint8_t relay2type;
+  uint8_t relay3type;
+  uint8_t relay4type;
+  uint8_t relay5type;
+  uint8_t relay6type;
+  uint8_t relay7type;
+  uint16_t relay0time;
+  uint16_t relay1time;
+  uint16_t relay2time;
+  uint16_t relay3time;
+  uint16_t relay4time;
+  uint16_t relay5time;
+  uint16_t relay6time;
+  uint16_t relay7time;
+  uint16_t relay0blinktime;
+  uint16_t relay1blinktime;
+  uint16_t relay2blinktime;
+  uint16_t relay3blinktime;
+  uint16_t relay4blinktime;
+  uint16_t relay5blinktime;
+  uint16_t relay6blinktime;
+  uint16_t relay7blinktime;
+  uint16_t costam;
 };
-
 
 class Odbiornik
 {
@@ -66,4 +90,6 @@ class Odbiornik
     // SPRAWDZA CZY NASTAPILA ZMIANA W ZWORKACH
     // JESLI TAK TO USTAWIA NOWY ADRES DLA ODBIORNIKA
     void manageZworki();
+
+    void test();
 };

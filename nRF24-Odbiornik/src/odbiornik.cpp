@@ -3,7 +3,7 @@
 
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
-extern char incomingData[2048];
+extern SettingsData settingsData;
 
 Outputs outputs;
 
@@ -48,6 +48,7 @@ void Odbiornik::initRF()
   // nRF24L01
   radio.begin();
   radio.openReadingPipe(1, address[address_nr]);
+  radio.openReadingPipe(3, address[address_nr]);
   //radio.enableAckPayload();
   //radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
@@ -104,21 +105,58 @@ bool Odbiornik::isPhysicalSignal()
   else return false;                                    // jesli bez zmian -> FALSE
 }
 
-void test(){
-  DynamicJsonDocument doc(2048);
-  DeserializationError error = deserializeJson(doc, incomingData);
+void Odbiornik::test(){
+    Serial.print(F("relay0type: ")); Serial.println(settingsData.relay0type);
+    Serial.print(F("relay1type: ")); Serial.println(settingsData.relay1type);
+    Serial.print(F("relay2type: ")); Serial.println(settingsData.relay2type);
+    Serial.print(F("relay3type: ")); Serial.println(settingsData.relay3type);
+    Serial.print(F("relay4type: ")); Serial.println(settingsData.relay4type);
+    Serial.print(F("relay5type: ")); Serial.println(settingsData.relay5type);
+    Serial.print(F("relay6type: ")); Serial.println(settingsData.relay6type);
+    Serial.print(F("relay7type: ")); Serial.println(settingsData.relay7type);
+    Serial.print(F("relay0time: ")); Serial.println(settingsData.relay0time);
+    Serial.print(F("relay1time: ")); Serial.println(settingsData.relay1time);
+    Serial.print(F("relay2time: ")); Serial.println(settingsData.relay2time);
+    Serial.print(F("relay3time: ")); Serial.println(settingsData.relay3time);
+    Serial.print(F("relay4time: ")); Serial.println(settingsData.relay4time);
+    Serial.print(F("relay5time: ")); Serial.println(settingsData.relay5time);
+    Serial.print(F("relay6time: ")); Serial.println(settingsData.relay6time);
+    Serial.print(F("relay7time: ")); Serial.println(settingsData.relay7time);
+    Serial.print(F("relay0blinktime: ")); Serial.println(settingsData.relay0blinktime);
+    Serial.print(F("relay1blinktime: ")); Serial.println(settingsData.relay1blinktime);
+    Serial.print(F("relay2blinktime: ")); Serial.println(settingsData.relay2blinktime);
+    Serial.print(F("relay3blinktime: ")); Serial.println(settingsData.relay3blinktime);
+    Serial.print(F("relay4blinktime: ")); Serial.println(settingsData.relay4blinktime);
+    Serial.print(F("relay5blinktime: ")); Serial.println(settingsData.relay5blinktime);
+    Serial.print(F("relay6blinktime: ")); Serial.println(settingsData.relay6blinktime);
+    Serial.print(F("relay7blinktime: ")); Serial.println(settingsData.relay7blinktime);
 
-  if (error) {
-    outputs.relays[5].activate(1000, ElightType::Solid, Eevoker::Helper);
-    return;
-  }
-
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-  String dwa = doc["dwa"];
-  Serial.println(dwa);
-  if(dwa == "cwaj"){
+  if(settingsData.costam == 1000){
     outputs.relays[1].activate(2000, ElightType::Blink, 200, Eevoker::Helper);
+    Serial.print(F("relay0type: ")); Serial.println(settingsData.relay0type);
+    Serial.print(F("relay1type: ")); Serial.println(settingsData.relay1type);
+    Serial.print(F("relay2type: ")); Serial.println(settingsData.relay2type);
+    Serial.print(F("relay3type: ")); Serial.println(settingsData.relay3type);
+    Serial.print(F("relay4type: ")); Serial.println(settingsData.relay4type);
+    Serial.print(F("relay5type: ")); Serial.println(settingsData.relay5type);
+    Serial.print(F("relay6type: ")); Serial.println(settingsData.relay6type);
+    Serial.print(F("relay7type: ")); Serial.println(settingsData.relay7type);
+    Serial.print(F("relay0time: ")); Serial.println(settingsData.relay0time);
+    Serial.print(F("relay1time: ")); Serial.println(settingsData.relay1time);
+    Serial.print(F("relay2time: ")); Serial.println(settingsData.relay2time);
+    Serial.print(F("relay3time: ")); Serial.println(settingsData.relay3time);
+    Serial.print(F("relay4time: ")); Serial.println(settingsData.relay4time);
+    Serial.print(F("relay5time: ")); Serial.println(settingsData.relay5time);
+    Serial.print(F("relay6time: ")); Serial.println(settingsData.relay6time);
+    Serial.print(F("relay7time: ")); Serial.println(settingsData.relay7time);
+    Serial.print(F("relay0blinktime: ")); Serial.println(settingsData.relay0blinktime);
+    Serial.print(F("relay1blinktime: ")); Serial.println(settingsData.relay1blinktime);
+    Serial.print(F("relay2blinktime: ")); Serial.println(settingsData.relay2blinktime);
+    Serial.print(F("relay3blinktime: ")); Serial.println(settingsData.relay3blinktime);
+    Serial.print(F("relay4blinktime: ")); Serial.println(settingsData.relay4blinktime);
+    Serial.print(F("relay5blinktime: ")); Serial.println(settingsData.relay5blinktime);
+    Serial.print(F("relay6blinktime: ")); Serial.println(settingsData.relay6blinktime);
+    Serial.print(F("relay7blinktime: ")); Serial.println(settingsData.relay7blinktime);
   }
 }
 
@@ -139,8 +177,6 @@ void Odbiornik::manageInputWireless()
     outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Helper);
     whistleData.getgwizd = 2; // default state...
   }
-
-  test();
 }
 
 
