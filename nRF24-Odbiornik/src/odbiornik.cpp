@@ -41,7 +41,7 @@ void Odbiornik::init()
   digitalWriteFast(OUTPIN7, HIGH);
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
 
-  //initializeEEPROM();
+  initializeEEPROM();
 
   outputs.setupOutputs();
   #ifdef DEBUGRELAYS
