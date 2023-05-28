@@ -19,50 +19,48 @@ enum Eevoker
 class Relay
 {
 private:
-    int activeTimeMS = 0;
+    uint16_t activeTimeMS = 0;
     time_t activateTime;
-    int blinkTimeMS = 0;
+    uint16_t blinkTimeMS = 0;
     time_t lastBlinkTime;
 
     bool isActive = false;
-    int lightType;
-    int evoker;
-    int relayNumber = 0;
-
-    void changePinState();
+    uint8_t lightType;
+    uint8_t evoker;
+    uint8_t relayPin = 0;
 
     // GETTERS SETTERS
-    int getActiveTimeMS() const { return activeTimeMS; }
-    void setActiveTimeMS(int activeTimeMS_) { activeTimeMS = activeTimeMS_; }
+    uint16_t getActiveTimeMS() const { return activeTimeMS; }
+    void setActiveTimeMS(uint16_t activeTimeMS_) { activeTimeMS = activeTimeMS_; }
 
     void setIsActive(bool isActive_) { isActive = isActive_; }
 
     time_t getActivateTime() const { return activateTime; }
     void setActivateTime(const time_t &activateTime_) { activateTime = activateTime_; }
 
-    void setLightType(int lightType_) { lightType = lightType_; }
+    void setLightType(uint8_t lightType_) { lightType = lightType_; }
 
     int getEvoker() const { return evoker; }
-    void setEvoker(int evoker_) { evoker = evoker_; }
+    void setEvoker(uint8_t evoker_) { evoker = evoker_; }
 
 
 
 public:
-    void setRelayNumber(int relayNumber_) { relayNumber = relayNumber_; }
+    void setRelayPin(uint8_t relayPin_) { relayPin = relayPin_; }
     bool getIsActive() const { return isActive; }
     int getLightType() const { return lightType; }
 
-    int getBlinkTimeMS() const { return blinkTimeMS; }
-    void setBlinkTimeMS(int blinkTimeMS_) { blinkTimeMS = blinkTimeMS_; }
+    uint16_t getBlinkTimeMS() const { return blinkTimeMS; }
+    void setBlinkTimeMS(uint16_t blinkTimeMS_) { blinkTimeMS = blinkTimeMS_; }
 
     time_t getLastBlinkTime() const { return lastBlinkTime; }
     void setLastBlinkTime(const time_t &lastBlinkTime_) { lastBlinkTime = lastBlinkTime_; }
 
-    int getRelayNumber() const { return relayNumber; }
+    uint8_t getRelayPin() const { return relayPin; }
 
 
-    void activate(int timeMS, int lightType, int evoker);
-    void activate(int timeMS, int lightType, int blinkTime, int evoker);
+    void activate(uint16_t timeMS, uint8_t lightType, uint8_t evoker);
+    void activate(uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, uint8_t evoker);
     void deactivate();
     bool isTimeout();
 };

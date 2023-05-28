@@ -2,29 +2,27 @@
 #include "SPI.h"
 #include "configuration.h"
 
-void Relay::activate( int timeMS, int lightType, int evoker ){
+void Relay::activate( uint16_t timeMS, uint8_t lightType, uint8_t evoker ){
     if(lightType == Solid){
         this->setActiveTimeMS(timeMS);
         this->setLightType(lightType);
         this->setEvoker(evoker);
         this->isActive = true;
         this->activateTime = millis();
-        digitalWriteFast(this->relayNumber, LOW);
+        digitalWriteFast(this->relayPin, LOW);
     }
 
     #ifdef DEBUGRELAYS
-        Serial.println(F("========================================="));
         Serial.println(F("Relay: Activate"));
         Serial.print(F("timeMS: ")); Serial.println(timeMS);
         Serial.print(F("lightType: ")); Serial.println(lightType);
         Serial.print(F("evoker: ")); Serial.println(evoker);
-        Serial.print(F("relayPin: ")); Serial.println(relayNumber);
+        Serial.print(F("relayPin: ")); Serial.println(relayPin);
         Serial.print(F("activateMillis: ")); Serial.println(this->activateTime);
-        Serial.println(F("========================================="));
     #endif
 }
 
-void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
+void Relay::activate( uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, uint8_t evoker ){
     if(lightType == Blink && isActive == false){
         this->setActiveTimeMS(timeMS);
         this->setLightType(lightType);
@@ -32,7 +30,7 @@ void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
         this->setEvoker(evoker);
         this->isActive = true;
         this->activateTime = millis();
-        digitalWriteFast(this->relayNumber, LOW);
+        digitalWriteFast(this->relayPin, LOW);
     }
     else if ( isActive == true){
         this->activateTime = millis();
@@ -41,15 +39,13 @@ void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
 
 void Relay::deactivate(){
     #ifdef DEBUGRELAYS
-        Serial.println(F("========================================="));
         Serial.println(F("Deactivate"));
         Serial.print(F("deac millis: ")); Serial.println(millis());
         Serial.print(F("time elapsed: ")); Serial.println(millis() - this->activateTime);
         Serial.print(F("relayType: ")); Serial.println(this->getLightType());
-        Serial.println(F("========================================="));
     #endif
     this->isActive = false;
-    digitalWriteFast(this->relayNumber, HIGH);
+    digitalWriteFast(this->relayPin, HIGH);
 }
 
 bool Relay::isTimeout(){

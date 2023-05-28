@@ -3,21 +3,21 @@
 
 void Outputs::setupOutputs(){
     #ifdef DEBUGSERIAL
-        relays[0].setRelayNumber( OUTPIN0 );
-        relays[1].setRelayNumber( OUTPIN1 );
-        relays[2].setRelayNumber( OUTPIN2 );
-        relays[3].setRelayNumber( OUTPIN3 );
-        relays[4].setRelayNumber( OUTPIN6 );
-        relays[5].setRelayNumber( OUTPIN7 );
+        relays[0].setRelayPin( OUTPIN0 );
+        relays[1].setRelayPin( OUTPIN1 );
+        relays[2].setRelayPin( OUTPIN2 );
+        relays[3].setRelayPin( OUTPIN3 );
+        relays[4].setRelayPin( OUTPIN6 );
+        relays[5].setRelayPin( OUTPIN7 );
     #else
-        relays[0].setRelayNumber( OUTPIN0 );
-        relays[1].setRelayNumber( OUTPIN1 );
-        relays[2].setRelayNumber( OUTPIN2 );
-        relays[3].setRelayNumber( OUTPIN3 );
-        relays[4].setRelayNumber( OUTPIN4 );
-        relays[5].setRelayNumber( OUTPIN5 );
-        relays[6].setRelayNumber( OUTPIN6 );
-        relays[7].setRelayNumber( OUTPIN7 );
+        relays[0].setRelayPin( OUTPIN0 );
+        relays[1].setRelayPin( OUTPIN1 );
+        relays[2].setRelayPin( OUTPIN2 );
+        relays[3].setRelayPin( OUTPIN3 );
+        relays[4].setRelayPin( OUTPIN4 );
+        relays[5].setRelayPin( OUTPIN5 );
+        relays[6].setRelayPin( OUTPIN6 );
+        relays[7].setRelayPin( OUTPIN7 );
     #endif
 }
 
@@ -41,7 +41,7 @@ void Outputs::manageBlinks(){
             if(millis() - relays[i].getLastBlinkTime() >= relays[i].getBlinkTimeMS())
             {
                 digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
-                digitalWriteFast(relays[i].getRelayNumber(), !digitalReadFast(relays[i].getRelayNumber())); // odwracamy przekaznik
+                digitalWriteFast(relays[i].getRelayPin(), !digitalReadFast(relays[i].getRelayPin())); // odwracamy przekaznik
 
                 relays[i].setLastBlinkTime( millis() );
             }

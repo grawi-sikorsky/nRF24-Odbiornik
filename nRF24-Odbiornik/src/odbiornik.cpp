@@ -1,5 +1,6 @@
 #include "../src/odbiornik.h"
 #include "../src/outputs.h"
+#include "util.h"
 
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
@@ -40,7 +41,7 @@ void Odbiornik::init()
   digitalWriteFast(OUTPIN7, HIGH);
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
 
-  initializeEEPROM();
+  //initializeEEPROM();
 
   outputs.setupOutputs();
   #ifdef DEBUGRELAYS
@@ -113,87 +114,74 @@ bool Odbiornik::isSettingsSignal(){
 }
 
 void Odbiornik::test(){
+  relaySetting.relayTime = ntohs(relaySetting.relayTime);
+  relaySetting.relayBlinkTime = ntohs(relaySetting.relayBlinkTime);
+
   switch (relaySetting.relayNumber)
   {
   case 0:
-    relaySettings[0].relayTime = relaySetting.relayTime;
+    relaySettings[0].relayEnabled = relaySetting.relayEnabled;
     relaySettings[0].relayType = relaySetting.relayType;
+    relaySettings[0].relayTime = relaySetting.relayTime;
     relaySettings[0].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   case 1:
-    relaySettings[1].relayTime = relaySetting.relayTime;
+    relaySettings[1].relayEnabled = relaySetting.relayEnabled;
     relaySettings[1].relayType = relaySetting.relayType;
+    relaySettings[1].relayTime = relaySetting.relayTime;
     relaySettings[1].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   case 2:
-    relaySettings[2].relayTime = relaySetting.relayTime;
+    relaySettings[2].relayEnabled = relaySetting.relayEnabled;
     relaySettings[2].relayType = relaySetting.relayType;
+    relaySettings[2].relayTime = relaySetting.relayTime;
     relaySettings[2].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   case 3:
-    relaySettings[3].relayTime = relaySetting.relayTime;
+    relaySettings[3].relayEnabled = relaySetting.relayEnabled;
     relaySettings[3].relayType = relaySetting.relayType;
+    relaySettings[3].relayTime = relaySetting.relayTime;
     relaySettings[3].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   case 4:
-    relaySettings[4].relayTime = relaySetting.relayTime;
+    relaySettings[4].relayEnabled = relaySetting.relayEnabled;
     relaySettings[4].relayType = relaySetting.relayType;
+    relaySettings[4].relayTime = relaySetting.relayTime;
     relaySettings[4].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   case 5:
-    relaySettings[5].relayTime = relaySetting.relayTime;
+    relaySettings[5].relayEnabled = relaySetting.relayEnabled;
     relaySettings[5].relayType = relaySetting.relayType;
+    relaySettings[5].relayTime = relaySetting.relayTime;
     relaySettings[5].relayBlinkTime = relaySetting.relayBlinkTime;
     break;
   default:
     break;
   }
-    Serial.print(F("relayNumber: ")); Serial.println(relaySetting.relayNumber);
-    Serial.print(F("relayType: ")); Serial.println(relaySetting.relayType);
-    Serial.print(F("relayTime: ")); Serial.println(relaySetting.relayTime);
-    Serial.print(F("relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
 
-
-  // if(settingsData.costam == 1000){
-  //   outputs.relays[1].activate(2000, ElightType::Blink, 200, Eevoker::Helper);
-  //   Serial.print(F("relay0type: ")); Serial.println(settingsData.relay0type);
-  //   Serial.print(F("relay1type: ")); Serial.println(settingsData.relay1type);
-  //   Serial.print(F("relay2type: ")); Serial.println(settingsData.relay2type);
-  //   Serial.print(F("relay3type: ")); Serial.println(settingsData.relay3type);
-  //   Serial.print(F("relay4type: ")); Serial.println(settingsData.relay4type);
-  //   Serial.print(F("relay5type: ")); Serial.println(settingsData.relay5type);
-  //   Serial.print(F("relay6type: ")); Serial.println(settingsData.relay6type);
-  //   Serial.print(F("relay7type: ")); Serial.println(settingsData.relay7type);
-  //   Serial.print(F("relay0time: ")); Serial.println(settingsData.relay0time);
-  //   Serial.print(F("relay1time: ")); Serial.println(settingsData.relay1time);
-  //   Serial.print(F("relay2time: ")); Serial.println(settingsData.relay2time);
-  //   Serial.print(F("relay3time: ")); Serial.println(settingsData.relay3time);
-  //   Serial.print(F("relay4time: ")); Serial.println(settingsData.relay4time);
-  //   Serial.print(F("relay5time: ")); Serial.println(settingsData.relay5time);
-  //   Serial.print(F("relay6time: ")); Serial.println(settingsData.relay6time);
-  //   Serial.print(F("relay7time: ")); Serial.println(settingsData.relay7time);
-  //   Serial.print(F("relay0blinktime: ")); Serial.println(settingsData.relay0blinktime);
-  //   Serial.print(F("relay1blinktime: ")); Serial.println(settingsData.relay1blinktime);
-  //   Serial.print(F("relay2blinktime: ")); Serial.println(settingsData.relay2blinktime);
-  //   Serial.print(F("relay3blinktime: ")); Serial.println(settingsData.relay3blinktime);
-    // Serial.print(F("relay4blinktime: ")); Serial.println(settingsData.relay4blinktime);
-    // Serial.print(F("relay5blinktime: ")); Serial.println(settingsData.relay5blinktime);
-    // Serial.print(F("relay6blinktime: ")); Serial.println(settingsData.relay6blinktime);
-    // Serial.print(F("relay7blinktime: ")); Serial.println(settingsData.relay7blinktime);
-  // }
+  Serial.print(F("relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
+  Serial.print(F("relayNumber: ")); Serial.println(relaySetting.relayNumber);
+  Serial.print(F("relayType: ")); Serial.println(relaySetting.relayType);
+  Serial.print(F("relayTime: ")); Serial.println(relaySetting.relayTime);
+  Serial.print(F("relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
 }
 
 void Odbiornik::manageInputWireless()
 {
   if(isWhistleSignal())
   {
-    outputs.relays[0].activate(relaySettings[0].relayTime, ElightType::Solid, 0);
-    outputs.relays[1].activate(relaySettings[1].relayTime, ElightType::Solid, 0);
-    // outputs.relays[1].activate(3000, ElightType::Solid, 0);
-    // outputs.relays[2].activate(4000, ElightType::Solid, 0);
-    // outputs.relays[3].activate(5000, ElightType::Blink, 400, 0);
-    // outputs.relays[4].activate(2000, ElightType::Blink, 200, 0);
-    // outputs.relays[5].activate(6000, ElightType::Blink, 500, 0);
+    // for(int i = 0; i < RELAYS_COUNT; ++i){
+    //   if(relaySettings[i].relayEnabled){
+    //     outputs.relays[i].activate(relaySettings[i].relayTime,relaySettings[i].relayType,0);
+    //   }
+    // }
+
+    outputs.relays[0].activate(relaySettings[0].relayTime,relaySettings[0].relayType,0);
+    outputs.relays[1].activate(relaySettings[1].relayTime,relaySettings[1].relayType,0);
+    // outputs.relays[2].activate(relaySettings[2].relayTime,relaySettings[2].relayType,0);
+    // outputs.relays[3].activate(relaySettings[3].relayTime,relaySettings[3].relayType,0);
+    // outputs.relays[4].activate(relaySettings[4].relayTime,relaySettings[4].relayType,0);
+    // outputs.relays[5].activate(relaySettings[5].relayTime,relaySettings[5].relayType,0);
   }
   
   if (isHelperSignal())
@@ -277,7 +265,6 @@ void Odbiornik::saveSettings(RelaySetting settings[]){
 
 void Odbiornik::readSettings(RelaySetting settings[]){
   int addr = 0;  // Starting address in EEPROM
-
   for (int i = 0; i < RELAYS_COUNT; i++) {
     EEPROM.get(addr, settings[i]);
     addr += sizeof(RelaySetting);  // Increment address by the size of each item
@@ -289,6 +276,7 @@ void Odbiornik::readSettings(RelaySetting settings[]){
 
 void Odbiornik::printRelayEepromSettings(){
   for (int i = 0; i < RELAYS_COUNT; i++) {
+    Serial.print(F("relayEnabled: ")); Serial.println(relaySettings[i].relayEnabled);
     Serial.print(F("relayNumber: ")); Serial.println(relaySettings[i].relayNumber);
     Serial.print(F("relayType: ")); Serial.println(relaySettings[i].relayType);
     Serial.print(F("relayTime: ")); Serial.println(relaySettings[i].relayTime);
