@@ -9,7 +9,6 @@ Odbiornik odbiornik;
 RF24 radio(9, 10); // CE, CSN
 WhistleData whistleData;
 RelaySetting relaySetting;
-SettingsData settingsData;
 
 time_t currentTime, prevTime = 0;
 
@@ -22,6 +21,7 @@ time_t currentTime, prevTime = 0;
 void setup() 
 {
   #ifdef DEBUGSERIAL
+    delay(6000); // just to see setup serial info
     Serial.begin(BAUDRATE);
   #endif
 

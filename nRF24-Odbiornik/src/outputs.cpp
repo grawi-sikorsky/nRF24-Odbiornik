@@ -3,7 +3,6 @@
 
 void Outputs::setupOutputs(){
     #ifdef DEBUGSERIAL
-        output_size = 6;
         relays[0].setRelayNumber( OUTPIN0 );
         relays[1].setRelayNumber( OUTPIN1 );
         relays[2].setRelayNumber( OUTPIN2 );
@@ -11,7 +10,6 @@ void Outputs::setupOutputs(){
         relays[4].setRelayNumber( OUTPIN6 );
         relays[5].setRelayNumber( OUTPIN7 );
     #else
-        output_size = 8;
         relays[0].setRelayNumber( OUTPIN0 );
         relays[1].setRelayNumber( OUTPIN1 );
         relays[2].setRelayNumber( OUTPIN2 );
@@ -24,20 +22,20 @@ void Outputs::setupOutputs(){
 }
 
 void Outputs::disableAllOutputs(){
-    for (int i = 0; i < output_size; i++){
+    for (int i = 0; i < RELAYS_COUNT; i++){
         relays[i].deactivate();
     }
 }
 
 void Outputs::manageTimeouts(){
-    for (int i = 0; i < output_size; i++){
+    for (int i = 0; i < RELAYS_COUNT; i++){
         if(relays[i].isTimeout() && relays[i].getIsActive()){
             relays[i].deactivate();
         }
     }
 }
 void Outputs::manageBlinks(){
-    for (int i = 0; i < output_size; i++){
+    for (int i = 0; i < RELAYS_COUNT; i++){
         if(relays[i].getLightType() == Blink && relays[i].getIsActive())
         {
             if(millis() - relays[i].getLastBlinkTime() >= relays[i].getBlinkTimeMS())

@@ -12,13 +12,15 @@ void Relay::activate( int timeMS, int lightType, int evoker ){
         digitalWriteFast(this->relayNumber, LOW);
     }
 
-    #ifdef DEBUGSERIAL
+    #ifdef DEBUGRELAYS
+        Serial.println(F("========================================="));
         Serial.println(F("Relay: Activate"));
         Serial.print(F("timeMS: ")); Serial.println(timeMS);
         Serial.print(F("lightType: ")); Serial.println(lightType);
         Serial.print(F("evoker: ")); Serial.println(evoker);
         Serial.print(F("relayPin: ")); Serial.println(relayNumber);
         Serial.print(F("activateMillis: ")); Serial.println(this->activateTime);
+        Serial.println(F("========================================="));
     #endif
 }
 
@@ -38,11 +40,13 @@ void Relay::activate( int timeMS, int lightType, int blinkTime, int evoker ){
 }
 
 void Relay::deactivate(){
-    #ifdef DEBUGSERIAL
+    #ifdef DEBUGRELAYS
+        Serial.println(F("========================================="));
         Serial.println(F("Deactivate"));
         Serial.print(F("deac millis: ")); Serial.println(millis());
         Serial.print(F("time elapsed: ")); Serial.println(millis() - this->activateTime);
         Serial.print(F("relayType: ")); Serial.println(this->getLightType());
+        Serial.println(F("========================================="));
     #endif
     this->isActive = false;
     digitalWriteFast(this->relayNumber, HIGH);

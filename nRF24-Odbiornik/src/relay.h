@@ -1,4 +1,5 @@
 #include <time.h>
+#include "configuration.h"
 
 enum ElightType
 {

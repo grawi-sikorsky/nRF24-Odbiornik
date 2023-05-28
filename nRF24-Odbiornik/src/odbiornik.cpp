@@ -4,9 +4,8 @@
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
 extern RelaySetting relaySetting;
-RelaySetting relaySettings[6];
+RelaySetting relaySettings[RELAYS_COUNT];
 
-extern SettingsData settingsData;
 Outputs outputs;
 uint8_t address[][6] = { "1Node", "2Node", "3Node", "4Node", "5Node", "6Node" };
 
@@ -39,10 +38,14 @@ void Odbiornik::init()
   #endif
   digitalWriteFast(OUTPIN6, HIGH);
   digitalWriteFast(OUTPIN7, HIGH);
-
   inPin1_State = inPin1_prev_State = digitalReadFast(INPIN1);   // zakladamy ze stan bedzie spoczynkowy (!)
 
+  initializeEEPROM();
+
   outputs.setupOutputs();
+  #ifdef DEBUGRELAYS
+    printRelayEepromSettings();
+  #endif
 }
 
 void Odbiornik::initRF()
@@ -259,4 +262,64 @@ void Odbiornik::manageZworki()
       setRFaddress();
     }
   }
+}
+
+void Odbiornik::saveSettings(RelaySetting settings[]){
+  int addr = 0;  // Starting address in EEPROM
+  for (int i = 0; i < RELAYS_COUNT; i++) {
+    EEPROM.put(addr, settings[i]);
+    addr += sizeof(RelaySetting);  // Increment address by the size of each item
+  }
+  #ifdef DEBUGSERIAL
+    Serial.println(F("Settings Saved.."));
+  #endif
+}
+
+void Odbiornik::readSettings(RelaySetting settings[]){
+  int addr = 0;  // Starting address in EEPROM
+
+  for (int i = 0; i < RELAYS_COUNT; i++) {
+    EEPROM.get(addr, settings[i]);
+    addr += sizeof(RelaySetting);  // Increment address by the size of each item
+  }
+  #ifdef DEBUGSERIAL
+    Serial.println(F("Settings Readed.."));
+  #endif
+}
+
+void Odbiornik::printRelayEepromSettings(){
+  for (int i = 0; i < RELAYS_COUNT; i++) {
+    Serial.print(F("relayNumber: ")); Serial.println(relaySettings[i].relayNumber);
+    Serial.print(F("relayType: ")); Serial.println(relaySettings[i].relayType);
+    Serial.print(F("relayTime: ")); Serial.println(relaySettings[i].relayTime);
+    Serial.print(F("relayBlinkTime: ")); Serial.println(relaySettings[i].relayBlinkTime);
+  }
+}
+
+void Odbiornik::initializeEEPROM(){
+  // not touched eeprom have always HIGH value so bool becomes 1 = true
+  bool isEepromNotInitialized = EEPROM.read(EEPROM_INIT_PLACE);
+  #ifdef DEBUGSERIAL
+    Serial.print(F("Is EEPROM init needed? : ")); Serial.println(isEepromNotInitialized);
+  #endif
+
+  if(isEepromNotInitialized){
+    #ifdef DEBUGSERIAL
+      Serial.println(F("Initialize EEPROM..."));
+    #endif
+    RelaySetting DEFAULT_SETTINGS[] = {
+      DEFAULT_RELAY_1,
+      DEFAULT_RELAY_2,
+      DEFAULT_RELAY_3,
+      DEFAULT_RELAY_4,
+      DEFAULT_RELAY_5,
+      DEFAULT_RELAY_6,
+      DEFAULT_RELAY_7,
+      DEFAULT_RELAY_8
+    };
+    saveSettings(DEFAULT_SETTINGS);
+    EEPROM.put(EEPROM_INIT_PLACE, false);
+  }
+
+  readSettings(relaySettings);
 }

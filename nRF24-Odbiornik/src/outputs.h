@@ -3,8 +3,7 @@
 class Outputs
 {
     public:
-        int output_size;
-        Relay relays[6];
+        Relay relays[RELAYS_COUNT];
 
         void setupOutputs();
         void disableAllOutputs();

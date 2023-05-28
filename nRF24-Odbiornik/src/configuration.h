@@ -11,12 +11,9 @@
 
 // KONFIGURACJA
 #define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
+#define DEBUGRELAYS
 #define READ_REFRESH_TIME 100   // czestotliwosc ms odswiezania wejsc INPUT
 #define INFO_LED_TIME     500   // czas swiecenia leda informacyjnego na pcb
-
-// KONFIGURACJA WYJSC:
-//#define TEST_MODE                 // TESTMODE TO WERSJA PODSTAWOWA: EWRYFINK FAKING ILUMINEJTED
-#define EASY_MODE                 // WESJA PODSTAWOWA LANCUT [ GWIZDEK -> OUT1; POMOCNICZE -> OUT2; Reszta wolna]
 
 /********************************
 *  PINY
@@ -42,3 +39,44 @@
 #define OUTPIN5 1     //  wolne/TX
 #define OUTPIN6 2     //  timer off
 #define OUTPIN7 3     //  wolne
+
+#ifdef DEBUGSERIAL
+    #define RELAYS_COUNT 6
+#else
+    #define RELAYS_COUNT 8
+#endif
+
+#define EEPROM_INIT_PLACE 1023
+
+// Define default hardcoded values using
+// [ number, type, time, blinktime]
+#define DEFAULT_RELAY_1 {1, 0, 100, 200}
+#define DEFAULT_RELAY_2 {2, 1, 200, 400}
+#define DEFAULT_RELAY_3 {3, 0, 300, 600}
+#define DEFAULT_RELAY_4 {4, 1, 400, 800}
+#define DEFAULT_RELAY_5 {5, 0, 500, 1000}
+#define DEFAULT_RELAY_6 {6, 1, 600, 1200}
+#define DEFAULT_RELAY_7 {7, 0, 500, 1000}
+#define DEFAULT_RELAY_8 {8, 1, 600, 1200}
+
+#ifdef DEBUGSERIAL
+    #define DEFAULT_RELAYS [RELAYS_COUNT] { \
+    DEFAULT_RELAY_1, \
+    DEFAULT_RELAY_2, \
+    DEFAULT_RELAY_3, \
+    DEFAULT_RELAY_4, \
+    DEFAULT_RELAY_5, \
+    DEFAULT_RELAY_6  \
+    }
+#else
+    #define DEFAULT_RELAYS { \
+    DEFAULT_RELAY_1, \
+    DEFAULT_RELAY_2, \
+    DEFAULT_RELAY_3, \
+    DEFAULT_RELAY_4, \
+    DEFAULT_RELAY_5, \
+    DEFAULT_RELAY_6, \
+    DEFAULT_RELAY_7, \
+    DEFAULT_RELAY_8 \
+    }
+#endif
