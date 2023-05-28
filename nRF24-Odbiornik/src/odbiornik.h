@@ -2,14 +2,19 @@
 #include "configuration.h"
 #include <ArduinoJson.h>
 
-static byte address[][5] = {"Odb0","Odb1","Odb2","Odb3","Odb4","Odb5","Odb6","Odb7"};  // dostepne adresy odbiornikow zgodnie ze zworkami 1-3
-
 
 struct WhistleData
 {
   int     getgwizd;
   float   raw;
   float   avg;
+};
+
+struct RelaySetting {
+  uint8_t relayNumber = 0;
+  uint8_t relayType = 0;
+  uint16_t relayTime = 0;
+  uint16_t relayBlinkTime = 0;
 };
 
 struct SettingsData
@@ -34,11 +39,11 @@ struct SettingsData
   uint16_t relay1blinktime;
   uint16_t relay2blinktime;
   uint16_t relay3blinktime;
-  uint16_t relay4blinktime;
-  uint16_t relay5blinktime;
-  uint16_t relay6blinktime;
-  uint16_t relay7blinktime;
-  uint16_t costam;
+  // uint16_t relay4blinktime;
+  // uint16_t relay5blinktime;
+  // uint16_t relay6blinktime;
+  // uint16_t relay7blinktime;
+  // uint16_t costam;
 };
 
 class Odbiornik
@@ -51,7 +56,6 @@ class Odbiornik
     bool addr_State[3];//, addr2_State, addr3_State,
     bool prev_addr_State[3];//, prev_addr2_State, prev_addr3_State;
     bool inPin1_State, inPin1_prev_State;
-
 
   public:
     // Ustawia piny, pinmode,
@@ -75,6 +79,7 @@ class Odbiornik
     // Sprawdza czy stan wejsc fizycznych w odbiorniku sie zmienil
     bool isPhysicalSignal();
 
+    bool isSettingsSignal();
 
     // Obsluga wejsc radiowych
     void manageInputWireless();
@@ -92,4 +97,7 @@ class Odbiornik
     void manageZworki();
 
     void test();
+
+
+
 };
