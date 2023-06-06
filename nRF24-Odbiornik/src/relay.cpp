@@ -37,13 +37,27 @@ void Relay::activate( uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, ui
     }
 }
 
-void Relay::deactivate(){
-    #ifdef DEBUGRELAYS
-        Serial.println(F("Deactivate"));
-        Serial.print(F("deac millis: ")); Serial.println(millis());
-        Serial.print(F("time elapsed: ")); Serial.println(millis() - this->activateTime);
-        Serial.print(F("relayType: ")); Serial.println(this->getLightType());
-    #endif
+void Relay::activate( RelaySetting setting ){
+    this->setActiveTimeMS(setting.relayTime);
+    this->setLightType(setting.relayType);
+    this->setBlinkTimeMS(setting.relayBlinkTime);
+    this->setEvoker(setting.relayEvoker);
+    this->isActive = true;
+    this->activateTime = millis();
+    digitalWriteFast(this->relayPin, LOW);
+}
+
+void Relay::deactivate()
+{
+#ifdef DEBUGRELAYS
+    Serial.println(F("Deactivate"));
+    Serial.print(F("deac millis: "));
+    Serial.println(millis());
+    Serial.print(F("time elapsed: "));
+    Serial.println(millis() - this->activateTime);
+    Serial.print(F("relayType: "));
+    Serial.println(this->getLightType());
+#endif
     this->isActive = false;
     digitalWriteFast(this->relayPin, HIGH);
 }

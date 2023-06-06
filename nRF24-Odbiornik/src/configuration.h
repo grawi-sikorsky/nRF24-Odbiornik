@@ -49,24 +49,15 @@
 #define EEPROM_INIT_PLACE 1023
 
 // Define default hardcoded values using
-// [ enabled, number, type, time, blinktime]
-// #define DEFAULT_RELAY_1 {1U, 1U, 0U, 100U, 200U}
-// #define DEFAULT_RELAY_2 {1U, 2U, 1U, 200U, 400U}
-// #define DEFAULT_RELAY_3 {1U, 3U, 0U, 300U, 600U}
-// #define DEFAULT_RELAY_4 {1U, 4U, 1U, 400U, 800U}
-// #define DEFAULT_RELAY_5 {1U, 5U, 0U, 500U, 1000U}
-// #define DEFAULT_RELAY_6 {1U, 6U, 1U, 600U, 1200U}
-// #define DEFAULT_RELAY_7 {1U, 7U, 0U, 500U, 1000U}
-// #define DEFAULT_RELAY_8 {1U, 8U, 1U, 600U, 1200U}
-
-#define DEFAULT_RELAY_1 {100U, 200U, 1U, 1U, 0U}
-#define DEFAULT_RELAY_2 {200U, 400U, 1U, 2U, 1U}
-#define DEFAULT_RELAY_3 {300U, 600U, 1U, 3U, 0U}
-#define DEFAULT_RELAY_4 {400U, 800U, 1U, 4U, 1U}
-#define DEFAULT_RELAY_5 {500U, 1000U, 1U, 5U, 0U}
-#define DEFAULT_RELAY_6 {600U, 1200U, 1U, 6U, 1U}
-#define DEFAULT_RELAY_7 {500U, 1000U, 1U, 7U, 0U}
-#define DEFAULT_RELAY_8 {600U, 1200U, 1U, 8U, 1U}
+// [ time, blinkTime, enabled, relayNumber, relayType, evoker]
+#define DEFAULT_RELAY_1 {100U, 200U, 1U, 1U, 0U, 0U}
+#define DEFAULT_RELAY_2 {200U, 400U, 1U, 2U, 1U, 0U}
+#define DEFAULT_RELAY_3 {300U, 600U, 1U, 3U, 0U, 0U}
+#define DEFAULT_RELAY_4 {400U, 800U, 1U, 4U, 1U, 0U}
+#define DEFAULT_RELAY_5 {500U, 1000U, 1U, 5U, 0U, 0U}
+#define DEFAULT_RELAY_6 {600U, 1200U, 1U, 6U, 1U, 1U}
+#define DEFAULT_RELAY_7 {500U, 1000U, 1U, 7U, 0U, 0U}
+#define DEFAULT_RELAY_8 {600U, 1200U, 1U, 8U, 1U, 0U}
 
 #ifdef DEBUGSERIAL
     #define DEFAULT_RELAYS [RELAYS_COUNT] { \

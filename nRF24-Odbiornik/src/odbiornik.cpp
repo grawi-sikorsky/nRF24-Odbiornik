@@ -53,8 +53,8 @@ void Odbiornik::initRF()
 {
   // nRF24L01
   radio.begin();
-  radio.openReadingPipe(0, address[0]);
-  radio.openReadingPipe(1, address[1]);
+  radio.openReadingPipe(EWhistle, address[0]);
+  radio.openReadingPipe(EController, address[1]);
   radio.setPALevel(RF24_PA_MAX);
   radio.setDataRate(RF24_250KBPS);
   radio.setChannel(95);
@@ -83,7 +83,14 @@ void Odbiornik::setLedActive(){
 }
 
 bool Odbiornik::isWhistleSignal(){
-  if(whistleData.getgwizd == 1){
+  if(whistleData.command == ELightsOn){
+    return true;
+  }
+  return false;
+}
+
+bool Odbiornik::isWhistleTimerStopSignal(){
+  if(whistleData.command == ETimerStop){
     return true;
   }
   return false;
@@ -91,8 +98,8 @@ bool Odbiornik::isWhistleSignal(){
 
 bool Odbiornik::isHelperSignal()
 {
-  if( whistleData.getgwizd == 11 || whistleData.getgwizd == 12 || whistleData.getgwizd == 13 ||
-      whistleData.getgwizd == 21 || whistleData.getgwizd == 22 || whistleData.getgwizd == 23 )
+  if( whistleData.command == 11 || whistleData.command == 12 || whistleData.command == 13 ||
+      whistleData.command == 21 || whistleData.command == 22 || whistleData.command == 23 )
     {
       return true;
     }
@@ -107,57 +114,74 @@ bool Odbiornik::isPhysicalSignal()
 }
 
 bool Odbiornik::isSettingsSignal(){
-  if(whistleData.getgwizd == 99){
+  if(whistleData.command == 99){
     return true;
   }
   return false;
 }
 
-void Odbiornik::test(){
-  relaySetting.relayTime = ntohs(relaySetting.relayTime);
-  relaySetting.relayBlinkTime = ntohs(relaySetting.relayBlinkTime);
+void Odbiornik::processSettings(){
+  if(relaySetting.relayNumber >= 0 && relaySetting.relayNumber < 8){
 
-  switch (relaySetting.relayNumber)
-  {
-  case 0:
-    relaySettings[0].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[0].relayType = relaySetting.relayType;
-    relaySettings[0].relayTime = relaySetting.relayTime;
-    relaySettings[0].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  case 1:
-    relaySettings[1].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[1].relayType = relaySetting.relayType;
-    relaySettings[1].relayTime = relaySetting.relayTime;
-    relaySettings[1].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  case 2:
-    relaySettings[2].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[2].relayType = relaySetting.relayType;
-    relaySettings[2].relayTime = relaySetting.relayTime;
-    relaySettings[2].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  case 3:
-    relaySettings[3].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[3].relayType = relaySetting.relayType;
-    relaySettings[3].relayTime = relaySetting.relayTime;
-    relaySettings[3].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  case 4:
-    relaySettings[4].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[4].relayType = relaySetting.relayType;
-    relaySettings[4].relayTime = relaySetting.relayTime;
-    relaySettings[4].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  case 5:
-    relaySettings[5].relayEnabled = relaySetting.relayEnabled;
-    relaySettings[5].relayType = relaySetting.relayType;
-    relaySettings[5].relayTime = relaySetting.relayTime;
-    relaySettings[5].relayBlinkTime = relaySetting.relayBlinkTime;
-    break;
-  default:
-    break;
+    int number = relaySetting.relayNumber;
+
+    relaySetting.relayTime = ntohs(relaySetting.relayTime);
+    relaySetting.relayBlinkTime = ntohs(relaySetting.relayBlinkTime);
+
+    relaySettings[number].relayEnabled = relaySetting.relayEnabled;
+    relaySettings[number].relayType = relaySetting.relayType;
+    relaySettings[number].relayTime = relaySetting.relayTime;
+    relaySettings[number].relayBlinkTime = relaySetting.relayBlinkTime;
+    relaySettings[number].relayEvoker = relaySetting.relayEvoker;
   }
+
+  // switch (relaySetting.relayNumber)
+  // {
+  // case 0:
+  //   relaySettings[0].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[0].relayType = relaySetting.relayType;
+  //   relaySettings[0].relayTime = relaySetting.relayTime;
+  //   relaySettings[0].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[0].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // case 1:
+  //   relaySettings[1].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[1].relayType = relaySetting.relayType;
+  //   relaySettings[1].relayTime = relaySetting.relayTime;
+  //   relaySettings[1].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[1].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // case 2:
+  //   relaySettings[2].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[2].relayType = relaySetting.relayType;
+  //   relaySettings[2].relayTime = relaySetting.relayTime;
+  //   relaySettings[2].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[2].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // case 3:
+  //   relaySettings[3].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[3].relayType = relaySetting.relayType;
+  //   relaySettings[3].relayTime = relaySetting.relayTime;
+  //   relaySettings[3].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[3].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // case 4:
+  //   relaySettings[4].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[4].relayType = relaySetting.relayType;
+  //   relaySettings[4].relayTime = relaySetting.relayTime;
+  //   relaySettings[4].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[4].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // case 5:
+  //   relaySettings[5].relayEnabled = relaySetting.relayEnabled;
+  //   relaySettings[5].relayType = relaySetting.relayType;
+  //   relaySettings[5].relayTime = relaySetting.relayTime;
+  //   relaySettings[5].relayBlinkTime = relaySetting.relayBlinkTime;
+  //   relaySettings[5].relayEvoker = relaySetting.relayEvoker;
+  //   break;
+  // default:
+  //   break;
+  // }
 
   Serial.print(F("relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
   Serial.print(F("relayNumber: ")); Serial.println(relaySetting.relayNumber);
@@ -178,16 +202,44 @@ void Odbiornik::manageInputWireless()
 
     outputs.relays[0].activate(relaySettings[0].relayTime,relaySettings[0].relayType,0);
     outputs.relays[1].activate(relaySettings[1].relayTime,relaySettings[1].relayType,0);
-    // outputs.relays[2].activate(relaySettings[2].relayTime,relaySettings[2].relayType,0);
-    // outputs.relays[3].activate(relaySettings[3].relayTime,relaySettings[3].relayType,0);
+    outputs.relays[2].activate(relaySettings[2].relayTime,relaySettings[2].relayType,0);
+    outputs.relays[3].activate(relaySettings[3].relayTime,relaySettings[3].relayType,0);
     // outputs.relays[4].activate(relaySettings[4].relayTime,relaySettings[4].relayType,0);
     // outputs.relays[5].activate(relaySettings[5].relayTime,relaySettings[5].relayType,0);
+  }
+
+  if(isWhistleTimerStopSignal()){
+    outputs.relays[5].activate(relaySettings[5].relayTime,relaySettings[5].relayType,0);
   }
   
   if (isHelperSignal())
   {
-    outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Helper);
-    whistleData.getgwizd = 2; // default state...
+    outputs.relays[4].activate(2000, ElightType::Solid, Eevoker::Helper);
+    whistleData.command = EDefaultState; // default state...
+  }
+}
+
+void Odbiornik::manageInputWirelessV2(){
+  if(isWhistleSignal())
+  {
+    activateType(Eevoker::Whistle);
+  }
+
+  if(isWhistleTimerStopSignal()){
+    activateType(Eevoker::WhistleButton);
+  }
+  
+  if (isHelperSignal())
+  {
+    activateType(Eevoker::Helper);
+  }
+}
+
+void Odbiornik::activateType(uint8_t evoker){
+  for (int i = 0; i < RELAYS_COUNT; i++){
+    if( relaySettings[i].relayEvoker == evoker ){
+      outputs.relays[i].activate(relaySettings[i]);
+    }
   }
 }
 
@@ -281,6 +333,7 @@ void Odbiornik::printRelayEepromSettings(){
     Serial.print(F("relayType: ")); Serial.println(relaySettings[i].relayType);
     Serial.print(F("relayTime: ")); Serial.println(relaySettings[i].relayTime);
     Serial.print(F("relayBlinkTime: ")); Serial.println(relaySettings[i].relayBlinkTime);
+    Serial.print(F("relayEvoker: ")); Serial.println(relaySettings[i].relayEvoker);
   }
 }
 

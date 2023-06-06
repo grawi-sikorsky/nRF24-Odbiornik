@@ -1,20 +1,23 @@
 #include <Arduino.h>
 #include "configuration.h"
+#include "relaySettingStruct.h"
 #include <EEPROM.h>
+
+enum EWhistleCommands{
+    ELightsOn,
+    ETimerStop,
+    EDefaultState
+};
+
+enum EDevices{
+    EWhistle,
+    EController
+};
 
 struct WhistleData
 {
-  int     getgwizd;
-  float   raw;
-  float   avg;
-};
-
-struct RelaySetting {
-  uint16_t relayTime;
-  uint16_t relayBlinkTime;
-  uint8_t relayEnabled;
-  uint8_t relayNumber;
-  uint8_t relayType;
+  int     device = EWhistle;
+  int     command = EDefaultState;
 };
 
 class Odbiornik
@@ -44,6 +47,8 @@ class Odbiornik
 
     bool isWhistleSignal();
 
+    bool isWhistleTimerStopSignal();
+
     // Sprawdza czy w danych z RF pojawily sie wartosci 11 12 13 21 22 23.
     bool isHelperSignal();
 
@@ -54,6 +59,10 @@ class Odbiornik
 
     // Obsluga wejsc radiowych
     void manageInputWireless();
+
+    void manageInputWirelessV2();
+
+    void activateType(uint8_t evoker);
 
     // Obsluga wejsc fizycznych w odbiorniku
     void manageInputPhysical();
@@ -72,7 +81,7 @@ class Odbiornik
     void readSettings(RelaySetting settings[]);
     void printRelayEepromSettings();
 
-    void test();
+    void processSettings();
 
 
 

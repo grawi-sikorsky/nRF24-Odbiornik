@@ -1,5 +1,6 @@
 #include <time.h>
 #include "configuration.h"
+#include "relaySettingStruct.h"
 
 enum ElightType
 {
@@ -12,6 +13,7 @@ enum ElightType
 enum Eevoker
 {
     Whistle,
+    WhistleButton,
     Helper,
     Physical
 };
@@ -43,8 +45,6 @@ private:
     int getEvoker() const { return evoker; }
     void setEvoker(uint8_t evoker_) { evoker = evoker_; }
 
-
-
 public:
     void setRelayPin(uint8_t relayPin_) { relayPin = relayPin_; }
     bool getIsActive() const { return isActive; }
@@ -58,9 +58,9 @@ public:
 
     uint8_t getRelayPin() const { return relayPin; }
 
-
     void activate(uint16_t timeMS, uint8_t lightType, uint8_t evoker);
     void activate(uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, uint8_t evoker);
+    void activate(RelaySetting setting);
     void deactivate();
     bool isTimeout();
 };

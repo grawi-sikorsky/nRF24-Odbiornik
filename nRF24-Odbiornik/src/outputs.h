@@ -9,5 +9,4 @@ class Outputs
         void disableAllOutputs();
         void manageTimeouts();
         void manageBlinks();
-
 };

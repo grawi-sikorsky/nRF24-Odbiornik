@@ -41,22 +41,22 @@ void loop() {
 
   if (radio.available(&pipe_num))
   {
-    Serial.print("PipeNumber [available]: "); Serial.println(pipe_num);
+    Serial.print(F("PipeNumber [available]: ")); Serial.println(pipe_num);
 
-    if(pipe_num == 0){
+    if(pipe_num == EWhistle){
       odbiornik.setLEDstate(true);
       radio.read(&whistleData, sizeof(whistleData));
 
       #ifdef DEBUGSERIAL
-        Serial.print(F("Gwizd: ")); Serial.println(whistleData.getgwizd);
+        Serial.print(F("Gwizd: ")); Serial.println(whistleData.command);
       #endif
 
       odbiornik.manageInputWireless();
       odbiornik.setLedActive();
     }
-    else if(pipe_num == 1){
+    else if(pipe_num == EController){
       radio.read(&relaySetting, sizeof(relaySetting));
-      odbiornik.test();
+      odbiornik.processSettings();
     }
   }
 
