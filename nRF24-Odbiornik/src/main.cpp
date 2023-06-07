@@ -51,7 +51,9 @@ void loop() {
         Serial.print(F("Gwizd: ")); Serial.println(whistleData.command);
       #endif
 
-      odbiornik.manageInputWireless();
+      //odbiornik.manageInputWireless();
+      odbiornik.manageInputWirelessV2();
+
       odbiornik.setLedActive();
     }
     else if(pipe_num == EController){
