@@ -9,6 +9,7 @@ struct RelaySetting {
   uint8_t relayNumber;
   uint8_t relayType;
   uint8_t relayEvoker;
+  uint8_t relayReceiverNumber;
 };
 
 #endif

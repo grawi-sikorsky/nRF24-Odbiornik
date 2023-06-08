@@ -135,59 +135,12 @@ void Odbiornik::processSettings(){
     relaySettings[number].relayEvoker = relaySetting.relayEvoker;
   }
 
-  // switch (relaySetting.relayNumber)
-  // {
-  // case 0:
-  //   relaySettings[0].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[0].relayType = relaySetting.relayType;
-  //   relaySettings[0].relayTime = relaySetting.relayTime;
-  //   relaySettings[0].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[0].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // case 1:
-  //   relaySettings[1].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[1].relayType = relaySetting.relayType;
-  //   relaySettings[1].relayTime = relaySetting.relayTime;
-  //   relaySettings[1].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[1].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // case 2:
-  //   relaySettings[2].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[2].relayType = relaySetting.relayType;
-  //   relaySettings[2].relayTime = relaySetting.relayTime;
-  //   relaySettings[2].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[2].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // case 3:
-  //   relaySettings[3].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[3].relayType = relaySetting.relayType;
-  //   relaySettings[3].relayTime = relaySetting.relayTime;
-  //   relaySettings[3].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[3].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // case 4:
-  //   relaySettings[4].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[4].relayType = relaySetting.relayType;
-  //   relaySettings[4].relayTime = relaySetting.relayTime;
-  //   relaySettings[4].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[4].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // case 5:
-  //   relaySettings[5].relayEnabled = relaySetting.relayEnabled;
-  //   relaySettings[5].relayType = relaySetting.relayType;
-  //   relaySettings[5].relayTime = relaySetting.relayTime;
-  //   relaySettings[5].relayBlinkTime = relaySetting.relayBlinkTime;
-  //   relaySettings[5].relayEvoker = relaySetting.relayEvoker;
-  //   break;
-  // default:
-  //   break;
-  // }
-
   Serial.print(F("relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
   Serial.print(F("relayNumber: ")); Serial.println(relaySetting.relayNumber);
   Serial.print(F("relayType: ")); Serial.println(relaySetting.relayType);
   Serial.print(F("relayTime: ")); Serial.println(relaySetting.relayTime);
   Serial.print(F("relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
+  Serial.print(F("relayEvoker: ")); Serial.println(relaySetting.relayEvoker);
 }
 
 void Odbiornik::manageInputWireless()
