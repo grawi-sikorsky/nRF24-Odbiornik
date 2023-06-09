@@ -16,8 +16,8 @@ enum EDevices{
 
 struct WhistleData
 {
-  int     device = EWhistle;
-  int     command = EDefaultState;
+  uint8_t device = EWhistle;
+  uint8_t command = EDefaultState;
 };
 
 class Odbiornik

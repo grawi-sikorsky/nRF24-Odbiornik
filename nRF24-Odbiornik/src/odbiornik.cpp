@@ -5,7 +5,7 @@
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
 extern RelaySetting relaySetting;
-RelaySetting relaySettings[RELAYS_COUNT];
+RelaySetting relaySettings[8];
 
 Outputs outputs;
 uint8_t address[][6] = { "1Node", "2Node", "3Node", "4Node", "5Node", "6Node" };
@@ -133,14 +133,19 @@ void Odbiornik::processSettings(){
     relaySettings[number].relayTime = relaySetting.relayTime;
     relaySettings[number].relayBlinkTime = relaySetting.relayBlinkTime;
     relaySettings[number].relayEvoker = relaySetting.relayEvoker;
+    relaySettings[number].relayReceiverNumber = relaySetting.relayReceiverNumber;
+
   }
 
-  Serial.print(F("relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
-  Serial.print(F("relayNumber: ")); Serial.println(relaySetting.relayNumber);
-  Serial.print(F("relayType: ")); Serial.println(relaySetting.relayType);
-  Serial.print(F("relayTime: ")); Serial.println(relaySetting.relayTime);
-  Serial.print(F("relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
-  Serial.print(F("relayEvoker: ")); Serial.println(relaySetting.relayEvoker);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayNumber: ")); Serial.println(relaySetting.relayNumber);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayType: ")); Serial.println(relaySetting.relayType);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayTime: ")); Serial.println(relaySetting.relayTime);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEvoker: ")); Serial.println(relaySetting.relayEvoker);
+  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayReceiverNumber: ")); Serial.println(relaySetting.relayReceiverNumber);
+  Serial.println("============================================================");
+
 }
 
 void Odbiornik::manageInputWireless()
@@ -190,7 +195,7 @@ void Odbiornik::manageInputWirelessV2(){
 
 void Odbiornik::activateType(uint8_t evoker){
   for (int i = 0; i < RELAYS_COUNT; i++){
-    if( relaySettings[i].relayEvoker == evoker ){
+    if( relaySettings[i].relayEvoker == evoker && relaySettings[i].relayEnabled == true){
       outputs.relays[i].activate(relaySettings[i]);
     }
   }

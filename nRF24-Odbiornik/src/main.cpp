@@ -59,6 +59,16 @@ void loop() {
     else if(pipe_num == EController){
       radio.read(&relaySetting, sizeof(relaySetting));
       odbiornik.processSettings();
+
+      // byte receivedData[32];
+      // radio.read(&receivedData, sizeof(receivedData));
+
+      // Serial.print("Received data: ");
+      // for (int i = 0; i < sizeof(receivedData); i++) {
+      //   Serial.print(receivedData[i], HEX);
+      //   Serial.print(" ");
+      // }
+      // Serial.println();
     }
   }
 
