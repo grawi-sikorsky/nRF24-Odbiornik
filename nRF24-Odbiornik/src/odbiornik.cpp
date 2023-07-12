@@ -52,7 +52,6 @@ void Odbiornik::init()
 
 void Odbiornik::initRF()
 {
-  // nRF24L01
   radio.begin();
   radio.openReadingPipe(EWhistle, address[0]);
   radio.openReadingPipe(EController, address[1]);
@@ -71,6 +70,10 @@ void Odbiornik::setLEDstate(bool state)
 bool Odbiornik::getLEDstate()
 {
   return digitalReadFast(LEDPIN);
+}
+
+bool Odbiornik::isInSettingsMode(){
+  return isSettingsMode;
 }
 
 void Odbiornik::manageLed(){
@@ -110,15 +113,8 @@ bool Odbiornik::isHelperSignal()
 bool Odbiornik::isPhysicalSignal()
 {
   inPin1_State = digitalReadFast(INPIN1);
-  if( inPin1_State != inPin1_prev_State ) return true;  // jesli na ktorymkolwiek pinie wystapia zmiana zwroc TRUE
-  else return false;                                    // jesli bez zmian -> FALSE
-}
-
-bool Odbiornik::isSettingsSignal(){
-  if(whistleData.command == 99){
-    return true;
-  }
-  return false;
+  if( inPin1_State != inPin1_prev_State ) return true;
+  else return false;
 }
 
 void Odbiornik::processSettings(){
@@ -135,30 +131,24 @@ void Odbiornik::processSettings(){
     relaySettings[number].relayBlinkTime = relaySetting.relayBlinkTime;
     relaySettings[number].relayEvoker = relaySetting.relayEvoker;
     relaySettings[number].relayReceiverNumber = relaySetting.relayReceiverNumber;
-
   }
 
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayNumber: ")); Serial.println(relaySetting.relayNumber);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayType: ")); Serial.println(relaySetting.relayType);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayTime: ")); Serial.println(relaySetting.relayTime);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEvoker: ")); Serial.println(relaySetting.relayEvoker);
-  Serial.print(relaySetting.relayNumber); Serial.print(F(" relayReceiverNumber: ")); Serial.println(relaySetting.relayReceiverNumber);
-  Serial.println("============================================================");
-
+  #ifdef DEBUGRELAYS
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEnabled: ")); Serial.println(relaySetting.relayEnabled);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayNumber: ")); Serial.println(relaySetting.relayNumber);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayType: ")); Serial.println(relaySetting.relayType);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayTime: ")); Serial.println(relaySetting.relayTime);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayBlinkTime: ")); Serial.println(relaySetting.relayBlinkTime);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayEvoker: ")); Serial.println(relaySetting.relayEvoker);
+    Serial.print(relaySetting.relayNumber); Serial.print(F(" relayReceiverNumber: ")); Serial.println(relaySetting.relayReceiverNumber);
+    Serial.println("============================================================");
+  #endif
 }
 
 void Odbiornik::manageInputWireless()
 {
   if(isWhistleSignal())
   {
-    // for(int i = 0; i < RELAYS_COUNT; ++i){
-    //   if(relaySettings[i].relayEnabled){
-    //     outputs.relays[i].activate(relaySettings[i].relayTime,relaySettings[i].relayType,0);
-    //   }
-    // }
-
     outputs.relays[0].activate(relaySettings[0].relayTime,relaySettings[0].relayType,0);
     outputs.relays[1].activate(relaySettings[1].relayTime,relaySettings[1].relayType,0);
     outputs.relays[2].activate(relaySettings[2].relayTime,relaySettings[2].relayType,0);
@@ -206,14 +196,7 @@ void Odbiornik::manageInputPhysical()
 {
   if (isPhysicalSignal())
   {
-	if (inPin1_State != inPin1_prev_State)
-	{
-	  if (inPin1_State == LOW)
-	  {
-		  outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Physical);
-	  }
-	  inPin1_prev_State = inPin1_State;
-	}
+    activateType(Eevoker::Physical);
   }
 }
 
@@ -221,18 +204,6 @@ void Odbiornik::manageOutputs()
 {
   outputs.manageBlinks();
   outputs.manageTimeouts();
-}
-
-void Odbiornik::setInPairingMode()
-{
-  radio.begin();
-  radio.openWritingPipe(address[2]);
-  radio.setRetries(1, 8); // delay, count
-  radio.setDataRate(RF24_250KBPS);
-  radio.setPALevel(RF24_PA_MAX);
-  radio.setChannel(95);
-
-	radio.write(&whistleData, sizeof(whistleData));
 }
 
 void Odbiornik::setRFaddress()
@@ -244,23 +215,18 @@ void Odbiornik::setRFaddress()
   else if(addr_State[0] == true   && addr_State[1] == false   && addr_State[2] == false)  {address_nr = 4;}
   else if(addr_State[0] == true   && addr_State[1] == false   && addr_State[2] == true)   {address_nr = 5;}
   else if(addr_State[0] == true   && addr_State[1] == true    && addr_State[2] == false)  {address_nr = 6;}
-  else if(addr_State[0] == true   && addr_State[1] == true    && addr_State[2] == true)   {address_nr = 7;}
+  else if(addr_State[0] == true   && addr_State[1] == true    && addr_State[2] == true)   {isSettingsMode = true;}
 
   radio.begin();
   radio.openReadingPipe(1, address[0]);
-  //radio.enableAckPayload();
-  //radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
   radio.setDataRate(RF24_250KBPS);
   radio.setChannel(95);
-  //radio.setRetries(5,15); // delay, count
-  //radio.setPayloadSize();
   radio.startListening();
 }
 
 void Odbiornik::manageZworki()
 {
-  // ODCZYTUJEMY WARTOSCI ZE ZWOREK (ZW1 - ZW3) W URZADZENIU
   addr_State[0] = !digitalReadFast(ADDR1);
   addr_State[1] = !digitalReadFast(ADDR2);
   addr_State[2] = !digitalReadFast(ADDR3);
@@ -270,8 +236,7 @@ void Odbiornik::manageZworki()
     if( addr_State[i] != prev_addr_State[i])
     {
       prev_addr_State[i] = addr_State[i];
-      //setRFaddress();
-      setInPairingMode();
+      setRFaddress();
     }
   }
 }

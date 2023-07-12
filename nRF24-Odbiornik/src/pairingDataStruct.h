@@ -4,11 +4,13 @@
 
 struct PairingData
 {
-  uint8_t relayEnabled;
-  uint8_t relayNumber;
-  uint8_t relayType;
-  uint8_t relayEvoker;
-  uint8_t relayReceiverNumber;
+  uint8_t pairingRequested;
+  uint8_t pairingApproved;
+  uint8_t controllerAddress;
+  uint8_t controllerNumber;
+  uint8_t receiverAddress;
+  uint8_t receiverNumber;
+  uint8_t dummy;
 };
 
-#endif
+#endif 

@@ -14,7 +14,7 @@ enum EWhistleCommands
 enum EDevices
 {
 	EWhistle,
-	EController
+	EController,
 };
 
 struct WhistleData
@@ -32,6 +32,7 @@ private:
 	bool addr_State[3];		 //, addr2_State, addr3_State,
 	bool prev_addr_State[3]; //, prev_addr2_State, prev_addr3_State;
 	bool inPin1_State, inPin1_prev_State;
+	bool isSettingsMode;
 
 public:
 	// Ustawia piny, pinmode,
@@ -45,6 +46,7 @@ public:
 	bool getLEDstate();
 	void manageLed();
 	void setLedActive();
+	bool isInSettingsMode();
 
 	bool isWhistleSignal();
 
@@ -55,8 +57,6 @@ public:
 
 	// Sprawdza czy stan wejsc fizycznych w odbiorniku sie zmienil
 	bool isPhysicalSignal();
-
-	bool isSettingsSignal();
 
 	// Obsluga wejsc radiowych
 	void manageInputWireless();
@@ -69,8 +69,6 @@ public:
 	void manageInputPhysical();
 
 	void manageOutputs();
-
-	void setInPairingMode();
 
 	// POBIERA ADRES ZE ZWOREK I USTAWIA GO DLA RFki
 	void setRFaddress();
@@ -85,4 +83,7 @@ public:
 	void printRelayEepromSettings();
 
 	void processSettings();
+
+
+	
 };
