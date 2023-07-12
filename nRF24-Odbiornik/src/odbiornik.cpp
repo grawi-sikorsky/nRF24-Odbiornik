@@ -5,6 +5,7 @@
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
 extern RelaySetting relaySetting;
+extern PairingData pairingData;
 RelaySetting relaySettings[8];
 
 Outputs outputs;
@@ -205,14 +206,14 @@ void Odbiornik::manageInputPhysical()
 {
   if (isPhysicalSignal())
   {
-    if( inPin1_State != inPin1_prev_State )
-    {
-      if(inPin1_State == LOW)
-      {
-        outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Physical);
-      }
-      inPin1_prev_State = inPin1_State;
-    }
+	if (inPin1_State != inPin1_prev_State)
+	{
+	  if (inPin1_State == LOW)
+	  {
+		  outputs.relays[5].activate(2000, ElightType::Solid, Eevoker::Physical);
+	  }
+	  inPin1_prev_State = inPin1_State;
+	}
   }
 }
 
@@ -221,6 +222,7 @@ void Odbiornik::manageOutputs()
   outputs.manageBlinks();
   outputs.manageTimeouts();
 }
+
 void Odbiornik::setInPairingMode()
 {
   radio.begin();
@@ -229,7 +231,8 @@ void Odbiornik::setInPairingMode()
   radio.setDataRate(RF24_250KBPS);
   radio.setPALevel(RF24_PA_MAX);
   radio.setChannel(95);
-  radio.startListening();
+
+	radio.write(&whistleData, sizeof(whistleData));
 }
 
 void Odbiornik::setRFaddress()

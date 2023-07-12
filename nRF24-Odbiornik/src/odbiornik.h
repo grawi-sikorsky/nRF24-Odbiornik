@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "configuration.h"
 #include "relaySettingStruct.h"
+#include "pairingDataStruct.h"
 #include <EEPROM.h>
 
 enum EWhistleCommands
