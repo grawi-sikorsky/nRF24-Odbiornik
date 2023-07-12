@@ -3,86 +3,85 @@
 #include "relaySettingStruct.h"
 #include <EEPROM.h>
 
-enum EWhistleCommands{
-    ELightsOn,
-    ETimerStop,
-    EDefaultState
+enum EWhistleCommands
+{
+	ELightsOn,
+	ETimerStop,
+	EDefaultState
 };
 
-enum EDevices{
-    EWhistle,
-    EController
+enum EDevices
+{
+	EWhistle,
+	EController
 };
 
 struct WhistleData
 {
-  uint8_t device = EWhistle;
-  uint8_t command = EDefaultState;
+	uint8_t device = EWhistle;
+	uint8_t command = EDefaultState;
 };
 
 class Odbiornik
 {
-  private:
+private:
+	time_t LEDlastActivationTime;
 
-    time_t LEDlastActivationTime;
+	int address_nr = 0;		 // wybor adresu z tablicy powyzej
+	bool addr_State[3];		 //, addr2_State, addr3_State,
+	bool prev_addr_State[3]; //, prev_addr2_State, prev_addr3_State;
+	bool inPin1_State, inPin1_prev_State;
 
-    int address_nr = 0; // wybor adresu z tablicy powyzej
-    bool addr_State[3];//, addr2_State, addr3_State,
-    bool prev_addr_State[3];//, prev_addr2_State, prev_addr3_State;
-    bool inPin1_State, inPin1_prev_State;
+public:
+	// Ustawia piny, pinmode,
+	void init();
 
-  public:
-    // Ustawia piny, pinmode,
-    void init();
+	// inizjalizuje nrfke
+	void initRF();
 
-    // inizjalizuje nrfke
-    void initRF();
+	// SET INFO LED ON or OFF
+	void setLEDstate(bool state);
+	bool getLEDstate();
+	void manageLed();
+	void setLedActive();
 
-    // SET INFO LED ON or OFF
-    void setLEDstate(bool state);
-    bool getLEDstate();
-    void manageLed();
-    void setLedActive();
+	bool isWhistleSignal();
 
+	bool isWhistleTimerStopSignal();
 
-    bool isWhistleSignal();
+	// Sprawdza czy w danych z RF pojawily sie wartosci 11 12 13 21 22 23.
+	bool isHelperSignal();
 
-    bool isWhistleTimerStopSignal();
+	// Sprawdza czy stan wejsc fizycznych w odbiorniku sie zmienil
+	bool isPhysicalSignal();
 
-    // Sprawdza czy w danych z RF pojawily sie wartosci 11 12 13 21 22 23.
-    bool isHelperSignal();
+	bool isSettingsSignal();
 
-    // Sprawdza czy stan wejsc fizycznych w odbiorniku sie zmienil
-    bool isPhysicalSignal();
+	// Obsluga wejsc radiowych
+	void manageInputWireless();
 
-    bool isSettingsSignal();
+	void manageInputWirelessV2();
 
-    // Obsluga wejsc radiowych
-    void manageInputWireless();
+	void activateType(uint8_t evoker);
 
-    void manageInputWirelessV2();
+	// Obsluga wejsc fizycznych w odbiorniku
+	void manageInputPhysical();
 
-    void activateType(uint8_t evoker);
+	void manageOutputs();
 
-    // Obsluga wejsc fizycznych w odbiorniku
-    void manageInputPhysical();
+	void setInPairingMode();
 
-    void manageOutputs();
+	// POBIERA ADRES ZE ZWOREK I USTAWIA GO DLA RFki
+	void setRFaddress();
 
-    // POBIERA ADRES ZE ZWOREK I USTAWIA GO DLA RFki
-    void setRFaddress();
+	// SPRAWDZA CZY NASTAPILA ZMIANA W ZWORKACH
+	// JESLI TAK TO USTAWIA NOWY ADRES DLA ODBIORNIKA
+	void manageZworki();
 
-    // SPRAWDZA CZY NASTAPILA ZMIANA W ZWORKACH
-    // JESLI TAK TO USTAWIA NOWY ADRES DLA ODBIORNIKA
-    void manageZworki();
+	void initializeEEPROM();
+	void saveSettings(RelaySetting settings[]);
+	void readSettings(RelaySetting settings[]);
+	void printRelayEepromSettings();
 
-    void initializeEEPROM();
-    void saveSettings(RelaySetting settings[]);
-    void readSettings(RelaySetting settings[]);
-    void printRelayEepromSettings();
-
-    void processSettings();
-
-
-
+	void processSettings();
 };
