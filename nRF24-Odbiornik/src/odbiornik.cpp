@@ -187,7 +187,9 @@ void Odbiornik::manageInputWirelessV2(){
 void Odbiornik::activateType(uint8_t evoker){
   for (int i = 0; i < RELAYS_COUNT; i++){
     if( relaySettings[i].relayEvoker == evoker && relaySettings[i].relayEnabled == true){
-      outputs.relays[i].activate(relaySettings[i]);
+      if(outputs.relays[i].getIsActive() == false){
+        outputs.relays[i].activate(relaySettings[i]);
+      }
     }
   }
 }

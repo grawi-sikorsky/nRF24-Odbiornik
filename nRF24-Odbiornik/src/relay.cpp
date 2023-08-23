@@ -9,6 +9,7 @@ void Relay::activate( uint16_t timeMS, uint8_t lightType, uint8_t evoker ){
         this->setEvoker(evoker);
         this->isActive = true;
         this->activateTime = millis();
+        this->lastBlinkTime = millis();
         digitalWriteFast(this->relayPin, LOW);
     }
 
@@ -30,6 +31,7 @@ void Relay::activate( uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, ui
         this->setEvoker(evoker);
         this->isActive = true;
         this->activateTime = millis();
+        this->lastBlinkTime = millis();
         digitalWriteFast(this->relayPin, LOW);
     }
     else if ( isActive == true){
@@ -44,6 +46,7 @@ void Relay::activate( RelaySetting setting ){
     this->setEvoker(setting.relayEvoker);
     this->isActive = true;
     this->activateTime = millis();
+    this->lastBlinkTime = millis();
     digitalWriteFast(this->relayPin, LOW);
 }
 
