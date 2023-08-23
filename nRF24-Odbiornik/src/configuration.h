@@ -51,9 +51,9 @@
 // Define default hardcoded values using
 // [ time, blinkTime, enabled, relayNumber, relayType, evoker]
 #define DEFAULT_RELAY_1 {2000U, 250U, 1U, 1U, 1U, 0U}
-#define DEFAULT_RELAY_2 {1000U, 250U, 1U, 2U, 1U, 0U}
-#define DEFAULT_RELAY_3 {1000U, 1000U, 0U, 3U, 0U, 0U}
-#define DEFAULT_RELAY_4 {1000U, 1000U, 0U, 4U, 0U, 0U}
+#define DEFAULT_RELAY_2 {1000U, 250U, 1U, 2U, 1U, 2U}
+#define DEFAULT_RELAY_3 {1000U, 1000U, 1U, 3U, 0U, 1U}
+#define DEFAULT_RELAY_4 {1000U, 1000U, 1U, 4U, 0U, 1U}
 #define DEFAULT_RELAY_5 {800U, 300U, 0U, 5U, 0U, 0U}
 #define DEFAULT_RELAY_6 {900U, 300U, 0U, 6U, 0U, 1U}
 #define DEFAULT_RELAY_7 {1000U, 300U, 0U, 7U, 0U, 0U}
