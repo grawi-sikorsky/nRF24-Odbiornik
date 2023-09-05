@@ -210,6 +210,8 @@ void Odbiornik::manageOutputs()
 
 void Odbiornik::setRFaddress()
 {
+  isSettingsMode = false;
+
   if(     addr_State[0] == false  && addr_State[1] == false   && addr_State[2] == false)  {address_nr = 0;}
   else if(addr_State[0] == false  && addr_State[1] == false   && addr_State[2] == true)   {address_nr = 1;}
   else if(addr_State[0] == false  && addr_State[1] == true    && addr_State[2] == false)  {address_nr = 2;}

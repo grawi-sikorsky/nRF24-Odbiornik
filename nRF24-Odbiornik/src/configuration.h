@@ -64,7 +64,7 @@
 #define DEFAULT_RELAY_8 {1200U,		300U,	0U,		8U,		0U,		0U}
 
 #ifdef DEBUGSERIAL
-    #define DEFAULT_RELAYS [RELAYS_COUNT] { \
+    #define DEFAULT_RELAYS { \
         DEFAULT_RELAY_1, \
         DEFAULT_RELAY_2, \
         DEFAULT_RELAY_3, \
