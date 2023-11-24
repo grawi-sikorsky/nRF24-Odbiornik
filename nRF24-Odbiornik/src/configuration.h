@@ -10,8 +10,9 @@
 #define BAUDRATE 250000
 
 // KONFIGURACJA
-#define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
-#define DEBUGRELAYS
+// #define DEBUGSERIAL             // DEBUG SERIAL - usuwa 2 output piny dla RX/TX
+// #define DEBUGRELAYS
+#define DEBUG_STUB
 #define READ_REFRESH_TIME 50    // interwaly odswiezania managera
 #define INFO_LED_TIME     500   // czas swiecenia leda informacyjnego na pcb
 

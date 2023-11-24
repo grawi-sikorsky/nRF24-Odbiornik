@@ -1,3 +1,6 @@
+#include "avr8-stub.h"
+#include "app_api.h"
+
 #include <digitalWriteFast.h>
 #include <SPI.h>
 #include <nRF24L01.h>
@@ -20,6 +23,8 @@ time_t currentTime, prevTime = 0;
 // SETUP
 void setup() 
 {
+  debug_init();
+  
   #ifdef DEBUGSERIAL
     delay(6000); // just to see setup serial info
     Serial.begin(BAUDRATE);
@@ -41,7 +46,9 @@ void loop() {
 
   if (radio.available(&pipe_num))
   {
-    Serial.print(F("PipeNumber [available]: ")); Serial.println(pipe_num);
+    #ifdef DEBUGSERIAL
+      Serial.print(F("PipeNumber [available]: ")); Serial.println(pipe_num);
+    #endif
 
     if(pipe_num == EWhistle){
       odbiornik.setLEDstate(true);
@@ -68,14 +75,14 @@ void loop() {
   // 2. SPRAWDZ POZOSTALE WEJSCIA (FIZYCZNE)
   currentTime = millis();
 
-  if(currentTime - prevTime >= READ_REFRESH_TIME )
-  {
+  // if(currentTime - prevTime >= READ_REFRESH_TIME )
+  // {
     prevTime = currentTime;
     odbiornik.manageInputPhysical();
     odbiornik.manageOutputs();
     odbiornik.manageZworki();
     odbiornik.manageLed();
-  }
+  // }
 
   #ifdef DEBUGSERIAL
     if(currentTime - lastDebugTime >= SERIAL_DEBUG_FREQ )

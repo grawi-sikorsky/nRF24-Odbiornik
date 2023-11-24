@@ -24,8 +24,10 @@ void Odbiornik::init()
   pinModeFast(OUTPIN2, OUTPUT);
   pinModeFast(OUTPIN3, OUTPUT);
   #ifndef DEBUGSERIAL
-  pinModeFast(OUTPIN4, OUTPUT); // RX
-  pinModeFast(OUTPIN5, OUTPUT); // RX
+    #ifndef DEBUG_STUB
+      pinModeFast(OUTPIN4, OUTPUT); // RX
+      pinModeFast(OUTPIN5, OUTPUT); // RX
+    #endif
   #endif
   pinModeFast(OUTPIN6, OUTPUT);
   pinModeFast(OUTPIN7, OUTPUT);
@@ -269,12 +271,14 @@ void Odbiornik::readSettings(RelaySetting settings[]){
 
 void Odbiornik::printRelayEepromSettings(){
   for (int i = 0; i < RELAYS_COUNT; i++) {
-    Serial.print(F("relayEnabled: ")); Serial.println(relaySettings[i].relayEnabled);
-    Serial.print(F("relayNumber: ")); Serial.println(relaySettings[i].relayNumber);
-    Serial.print(F("relayType: ")); Serial.println(relaySettings[i].relayType);
-    Serial.print(F("relayTime: ")); Serial.println(relaySettings[i].relayTime);
-    Serial.print(F("relayBlinkTime: ")); Serial.println(relaySettings[i].relayBlinkTime);
-    Serial.print(F("relayEvoker: ")); Serial.println(relaySettings[i].relayEvoker);
+    #ifdef DEBUGSERIAL
+      Serial.print(F("relayEnabled: ")); Serial.println(relaySettings[i].relayEnabled);
+      Serial.print(F("relayNumber: ")); Serial.println(relaySettings[i].relayNumber);
+      Serial.print(F("relayType: ")); Serial.println(relaySettings[i].relayType);
+      Serial.print(F("relayTime: ")); Serial.println(relaySettings[i].relayTime);
+      Serial.print(F("relayBlinkTime: ")); Serial.println(relaySettings[i].relayBlinkTime);
+      Serial.print(F("relayEvoker: ")); Serial.println(relaySettings[i].relayEvoker);
+    #endif
   }
 }
 
