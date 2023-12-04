@@ -50,7 +50,7 @@ public:
 
 	bool isWhistleSignal();
 
-	bool isWhistleTimerStopSignal();
+	bool isWhistleButtonSignal();
 
 	// Sprawdza czy w danych z RF pojawily sie wartosci 11 12 13 21 22 23.
 	bool isHelperSignal();
@@ -59,23 +59,23 @@ public:
 	bool isPhysicalSignal();
 
 	// Obsluga wejsc radiowych
-	void manageInputWireless();
+	void updateInputWireless();
 
-	void manageInputWirelessV2();
+	void updateInputWirelessV2();
 
-	void activateType(uint8_t evoker);
+	void activateRelaysByEvoker(uint8_t evoker);
 
 	// Obsluga wejsc fizycznych w odbiorniku
-	void manageInputPhysical();
+	void updateInputPhysical();
 
-	void manageOutputs();
+	void updateOutputs();
 
 	// POBIERA ADRES ZE ZWOREK I USTAWIA GO DLA RFki
 	void setRFaddress();
 
 	// SPRAWDZA CZY NASTAPILA ZMIANA W ZWORKACH
 	// JESLI TAK TO USTAWIA NOWY ADRES DLA ODBIORNIKA
-	void manageZworki();
+	void updateJumpers();
 
 	void initializeEEPROM();
 	void saveSettings(RelaySetting settings[]);

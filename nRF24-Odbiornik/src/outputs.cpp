@@ -27,18 +27,19 @@ void Outputs::disableAllOutputs(){
     }
 }
 
-void Outputs::manageTimeouts(){
+void Outputs::updateTimeouts(){
     for (int i = 0; i < RELAYS_COUNT; i++){
         if(relays[i].isTimeout() && relays[i].getIsActive()){
             relays[i].deactivate();
         }
     }
 }
-void Outputs::manageBlinks(){
+
+void Outputs::updateBlinks(){
     for (int i = 0; i < RELAYS_COUNT; i++){
         if(relays[i].getLightType() == Blink && relays[i].getIsActive())
         {
-            if(millis() - relays[i].getLastBlinkTime() >= relays[i].getBlinkTimeMS())
+            if(millis() - relays[i].getLastBlinkTime() >= relays[i].getBlinkDuration())
             {
                 digitalWriteFast(LEDPIN, !digitalReadFast(LEDPIN)); // odwroc stan 
                 digitalWriteFast(relays[i].getRelayPin(), !digitalReadFast(relays[i].getRelayPin())); // odwracamy przekaznik

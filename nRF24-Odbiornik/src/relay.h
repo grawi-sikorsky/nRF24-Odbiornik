@@ -5,9 +5,7 @@
 enum ElightType
 {
     Solid,
-    Blink,
-    FastBlink,
-    SlowBlink
+    Blink
 };
 
 enum Eevoker
@@ -21,9 +19,9 @@ enum Eevoker
 class Relay
 {
 private:
-    uint16_t activeTimeMS = 0;
-    time_t activateTime;
-    uint16_t blinkTimeMS = 0;
+    uint16_t duration = 0;
+    time_t activationTime;
+    uint16_t blinkDuration = 0;
     time_t lastBlinkTime;
 
     bool isActive = false;
@@ -32,13 +30,11 @@ private:
     uint8_t relayPin = 0;
 
     // GETTERS SETTERS
-    uint16_t getActiveTimeMS() const { return activeTimeMS; }
-    void setActiveTimeMS(uint16_t activeTimeMS_) { activeTimeMS = activeTimeMS_; }
+    uint16_t getDuration() const { return duration; }
+    void setDuration(uint16_t activeTimeMS_) { duration = activeTimeMS_; }
 
-    void setIsActive(bool isActive_) { isActive = isActive_; }
-
-    time_t getActivateTime() const { return activateTime; }
-    void setActivateTime(const time_t &activateTime_) { activateTime = activateTime_; }
+    time_t getActivationTime() const { return activationTime; }
+    void setActivationTime(const time_t &activationTime_) { activationTime = activationTime_; }
 
     void setLightType(uint8_t lightType_) { lightType = lightType_; }
 
@@ -47,16 +43,18 @@ private:
 
 public:
     void setRelayPin(uint8_t relayPin_) { relayPin = relayPin_; }
-    bool getIsActive() const { return isActive; }
+    uint8_t getRelayPin() const { return relayPin; }
+    
     int getLightType() const { return lightType; }
 
-    uint16_t getBlinkTimeMS() const { return blinkTimeMS; }
-    void setBlinkTimeMS(uint16_t blinkTimeMS_) { blinkTimeMS = blinkTimeMS_; }
+    void setIsActive(bool isActive_) { isActive = isActive_; }
+    bool getIsActive() const { return isActive; }
+
+    uint16_t getBlinkDuration() const { return blinkDuration; }
+    void setBlinkDuration(uint16_t blinkDuration_) { blinkDuration = blinkDuration_; }
 
     time_t getLastBlinkTime() const { return lastBlinkTime; }
     void setLastBlinkTime(const time_t &lastBlinkTime_) { lastBlinkTime = lastBlinkTime_; }
-
-    uint8_t getRelayPin() const { return relayPin; }
 
     void activate(uint16_t timeMS, uint8_t lightType, uint8_t evoker);
     void activate(uint16_t timeMS, uint8_t lightType, uint16_t blinkTime, uint8_t evoker);

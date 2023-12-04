@@ -7,6 +7,6 @@ class Outputs
 
         void setupOutputs();
         void disableAllOutputs();
-        void manageTimeouts();
-        void manageBlinks();
+        void updateTimeouts();
+        void updateBlinks();
 };

@@ -95,7 +95,7 @@ bool Odbiornik::isWhistleSignal(){
   return false;
 }
 
-bool Odbiornik::isWhistleTimerStopSignal(){
+bool Odbiornik::isWhistleButtonSignal(){
   if(whistleData.command == ETimerStop){
     return true;
   }
@@ -147,7 +147,7 @@ void Odbiornik::processSettings(){
   #endif
 }
 
-void Odbiornik::manageInputWireless()
+void Odbiornik::updateInputWireless()
 {
   if(isWhistleSignal())
   {
@@ -159,7 +159,7 @@ void Odbiornik::manageInputWireless()
     // outputs.relays[5].activate(relaySettings[5].relayTime,relaySettings[5].relayType,0);
   }
 
-  if(isWhistleTimerStopSignal()){
+  if(isWhistleButtonSignal()){
     outputs.relays[5].activate(relaySettings[5].relayTime,relaySettings[5].relayType,0);
   }
   
@@ -170,23 +170,31 @@ void Odbiornik::manageInputWireless()
   }
 }
 
-void Odbiornik::manageInputWirelessV2(){
+void Odbiornik::updateInputWirelessV2(){
   if(isWhistleSignal())
   {
-    activateType(Eevoker::Whistle);
+    activateRelaysByEvoker(Eevoker::Whistle);
   }
 
-  if(isWhistleTimerStopSignal()){
-    activateType(Eevoker::WhistleButton);
+  if(isWhistleButtonSignal()){
+    activateRelaysByEvoker(Eevoker::WhistleButton);
   }
   
   if (isHelperSignal())
   {
-    activateType(Eevoker::Helper);
+    activateRelaysByEvoker(Eevoker::Helper);
   }
 }
 
-void Odbiornik::activateType(uint8_t evoker){
+void Odbiornik::updateInputPhysical()
+{
+  if (isPhysicalSignal())
+  {
+    activateRelaysByEvoker(Eevoker::Physical);
+  }
+}
+
+void Odbiornik::activateRelaysByEvoker(uint8_t evoker){
   for (int i = 0; i < RELAYS_COUNT; i++){
     if( relaySettings[i].relayEvoker == evoker && relaySettings[i].relayEnabled == true){
       if(outputs.relays[i].getIsActive() == false){
@@ -196,18 +204,10 @@ void Odbiornik::activateType(uint8_t evoker){
   }
 }
 
-void Odbiornik::manageInputPhysical()
+void Odbiornik::updateOutputs()
 {
-  if (isPhysicalSignal())
-  {
-    activateType(Eevoker::Physical);
-  }
-}
-
-void Odbiornik::manageOutputs()
-{
-  outputs.manageBlinks();
-  outputs.manageTimeouts();
+  outputs.updateBlinks();
+  outputs.updateTimeouts();
 }
 
 void Odbiornik::setRFaddress()
@@ -231,7 +231,7 @@ void Odbiornik::setRFaddress()
   radio.startListening();
 }
 
-void Odbiornik::manageZworki()
+void Odbiornik::updateJumpers()
 {
   addr_State[0] = !digitalReadFast(ADDR1);
   addr_State[1] = !digitalReadFast(ADDR2);

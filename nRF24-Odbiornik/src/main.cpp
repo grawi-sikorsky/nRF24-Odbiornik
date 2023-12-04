@@ -31,7 +31,7 @@ void setup()
   #endif
 
   odbiornik.init();
-  odbiornik.manageZworki();
+  odbiornik.updateJumpers();
   odbiornik.initRF();
 
   #ifdef DEBUGSERIAL
@@ -59,7 +59,7 @@ void loop() {
       #endif
 
       //odbiornik.manageInputWireless();
-      odbiornik.manageInputWirelessV2();
+      odbiornik.updateInputWirelessV2();
 
       odbiornik.setLedActive();
     }
@@ -78,9 +78,9 @@ void loop() {
   // if(currentTime - prevTime >= READ_REFRESH_TIME )
   // {
     prevTime = currentTime;
-    odbiornik.manageInputPhysical();
-    odbiornik.manageOutputs();
-    odbiornik.manageZworki();
+    odbiornik.updateInputPhysical();
+    odbiornik.updateOutputs();
+    odbiornik.updateJumpers();
     odbiornik.manageLed();
   // }
 
