@@ -7,8 +7,8 @@
 /********************************
 *    USTAWIENIA
 ********************************/
-//#define CLICKER_MODE            // Clicker mode with H-bridge for controlling electrical actuator
-#define RELAYS_MODE             // Relays mode as usual for Lights etc.
+#define CLICKER_MODE            // Clicker mode with H-bridge for controlling electrical actuator
+// #define RELAYS_MODE             // Relays mode as usual for Lights etc.
 
 #define BAUDRATE 250000
 

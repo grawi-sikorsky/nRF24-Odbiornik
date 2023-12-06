@@ -1,5 +1,7 @@
-#include "avr8-stub.h"
-#include "app_api.h"
+#ifdef DEBUG_STUB
+  #include "avr8-stub.h"
+  #include "app_api.h"
+#endif
 
 #include <digitalWriteFast.h>
 #include <SPI.h>
@@ -23,7 +25,9 @@ time_t currentTime, prevTime = 0;
 // SETUP
 void setup() 
 {
-  debug_init();
+  #ifdef DEBUG_STUB
+    debug_init();
+  #endif
   
   #ifdef DEBUGSERIAL
     delay(6000); // just to see setup serial info
