@@ -30,7 +30,13 @@ void setup()
     Serial.begin(BAUDRATE);
   #endif
 
-  odbiornik.init();
+  #ifdef RELAYS_MODE
+    odbiornik.initInRelaysMode();
+  #endif
+  #ifdef CLICKER_MODE
+    odbiornik.initInClickerMode();
+  #endif
+
   odbiornik.updateJumpers();
   odbiornik.initRF();
 
@@ -58,8 +64,12 @@ void loop() {
         Serial.print(F("Gwizd: ")); Serial.println(whistleData.command);
       #endif
 
-      //odbiornik.manageInputWireless();
-      odbiornik.updateInputWirelessV2();
+      #ifdef RELAYS_MODE
+        odbiornik.activateRelaysFromWireless();
+      #endif
+      #ifdef CLICKER_MODE
+        odbiornik.activateClickerFromWireless();
+      #endif
 
       odbiornik.setLedActive();
     }
@@ -78,7 +88,7 @@ void loop() {
   // if(currentTime - prevTime >= READ_REFRESH_TIME )
   // {
     prevTime = currentTime;
-    odbiornik.updateInputPhysical();
+    odbiornik.activateRelaysFromPhysical();
     odbiornik.updateOutputs();
     odbiornik.updateJumpers();
     odbiornik.manageLed();

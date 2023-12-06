@@ -33,10 +33,11 @@ private:
 	bool prev_addr_State[3]; //, prev_addr2_State, prev_addr3_State;
 	bool inPin1_State, inPin1_prev_State;
 	bool isSettingsMode;
+	bool isClickerActive = false;
 
 public:
-	// Ustawia piny, pinmode,
-	void init();
+	void initInRelaysMode();
+	void initInClickerMode();
 
 	// inizjalizuje nrfke
 	void initRF();
@@ -61,12 +62,14 @@ public:
 	// Obsluga wejsc radiowych
 	void updateInputWireless();
 
-	void updateInputWirelessV2();
+	void activateRelaysFromWireless();
+	void activateClickerFromWireless();
 
 	void activateRelaysByEvoker(uint8_t evoker);
+	void activateClicker();
 
 	// Obsluga wejsc fizycznych w odbiorniku
-	void updateInputPhysical();
+	void activateRelaysFromPhysical();
 
 	void updateOutputs();
 
@@ -84,6 +87,4 @@ public:
 
 	void processSettings();
 
-
-	
 };

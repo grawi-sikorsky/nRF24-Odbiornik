@@ -11,7 +11,7 @@ RelaySetting relaySettings[8];
 Outputs outputs;
 uint8_t address[][6] = { "1Node", "2Node", "3Node", "4Node", "5Node", "6Node" };
 
-void Odbiornik::init()
+void Odbiornik::initInRelaysMode()
 {
   // PINS
   pinModeFast(INPIN1, INPUT_PULLUP);
@@ -37,8 +37,10 @@ void Odbiornik::init()
   digitalWriteFast(OUTPIN2, HIGH);
   digitalWriteFast(OUTPIN3, HIGH);
   #ifndef DEBUGSERIAL
-  digitalWriteFast(OUTPIN4, HIGH);  // RX
-  digitalWriteFast(OUTPIN5, HIGH);  // TX
+    #ifndef DEBUG_STUB
+      digitalWriteFast(OUTPIN4, HIGH);  // RX
+      digitalWriteFast(OUTPIN5, HIGH);  // TX
+    #endif
   #endif
   digitalWriteFast(OUTPIN6, HIGH);
   digitalWriteFast(OUTPIN7, HIGH);
@@ -50,6 +52,29 @@ void Odbiornik::init()
   #ifdef DEBUGRELAYS
     printRelayEepromSettings();
   #endif
+}
+
+void Odbiornik::initInClickerMode()
+{
+  // PINS
+  pinModeFast(OUTPIN0, OUTPUT);
+  pinModeFast(OUTPIN1, OUTPUT);
+  pinModeFast(OUTPIN2, OUTPUT);
+  pinModeFast(OUTPIN3, OUTPUT);
+  pinModeFast(OUTPIN4, OUTPUT); // RX
+  pinModeFast(OUTPIN5, OUTPUT); // RX
+  pinModeFast(OUTPIN6, OUTPUT);
+  pinModeFast(OUTPIN7, OUTPUT);
+
+  digitalWriteFast(OUTPIN0, HIGH);
+  digitalWriteFast(OUTPIN1, HIGH);
+  digitalWriteFast(OUTPIN2, HIGH);
+  digitalWriteFast(OUTPIN3, HIGH);
+  digitalWriteFast(OUTPIN4, HIGH);  // RX
+  digitalWriteFast(OUTPIN5, HIGH);  // TX
+  digitalWriteFast(OUTPIN6, HIGH);
+  digitalWriteFast(OUTPIN7, HIGH);
+
 }
 
 void Odbiornik::initRF()
@@ -170,7 +195,16 @@ void Odbiornik::updateInputWireless()
   }
 }
 
-void Odbiornik::updateInputWirelessV2(){
+void Odbiornik::activateClickerFromWireless(){
+  if(isWhistleSignal() || isWhistleButtonSignal() || isHelperSignal())
+  {
+    if(!isClickerActive){
+      isClickerActive = true;
+    }
+  }
+}
+
+void Odbiornik::activateRelaysFromWireless(){
   if(isWhistleSignal())
   {
     activateRelaysByEvoker(Eevoker::Whistle);
@@ -186,7 +220,7 @@ void Odbiornik::updateInputWirelessV2(){
   }
 }
 
-void Odbiornik::updateInputPhysical()
+void Odbiornik::activateRelaysFromPhysical()
 {
   if (isPhysicalSignal())
   {
@@ -204,10 +238,54 @@ void Odbiornik::activateRelaysByEvoker(uint8_t evoker){
   }
 }
 
+void Odbiornik::activateClicker(){
+  #ifdef CLICKER_MODE
+    digitalWriteFast(FORWARD_PIN_A, LOW);
+    digitalWriteFast(BACKWARD_PIN_A, HIGH);
+    digitalWriteFast(FORWARD_PIN_B, LOW);
+    digitalWriteFast(BACKWARD_PIN_B, HIGH);
+    digitalWriteFast(FORWARD_PIN_C, LOW);
+    digitalWriteFast(BACKWARD_PIN_C, HIGH);
+    digitalWriteFast(FORWARD_PIN_D, LOW);
+    digitalWriteFast(BACKWARD_PIN_D, HIGH);
+
+    delay(OPEN_TIME);
+
+    digitalWriteFast(FORWARD_PIN_A, HIGH);
+    digitalWriteFast(BACKWARD_PIN_A, LOW);
+    digitalWriteFast(FORWARD_PIN_B, HIGH);
+    digitalWriteFast(BACKWARD_PIN_B, LOW);
+    digitalWriteFast(FORWARD_PIN_C, HIGH);
+    digitalWriteFast(BACKWARD_PIN_C, LOW);
+    digitalWriteFast(FORWARD_PIN_D, HIGH);
+    digitalWriteFast(BACKWARD_PIN_D, LOW);
+
+    delay(CLOSE_TIME);
+
+    digitalWriteFast(FORWARD_PIN_A, HIGH);
+    digitalWriteFast(BACKWARD_PIN_A, HIGH);
+    digitalWriteFast(FORWARD_PIN_B, HIGH);
+    digitalWriteFast(BACKWARD_PIN_B, HIGH);
+    digitalWriteFast(FORWARD_PIN_C, HIGH);
+    digitalWriteFast(BACKWARD_PIN_C, HIGH);
+    digitalWriteFast(FORWARD_PIN_D, HIGH);
+    digitalWriteFast(BACKWARD_PIN_D, HIGH);
+
+    isClickerActive = false;
+  #endif
+}
+
 void Odbiornik::updateOutputs()
 {
-  outputs.updateBlinks();
-  outputs.updateTimeouts();
+  #ifdef RELAYS_MODE
+    outputs.updateBlinks();
+    outputs.updateTimeouts();
+  #endif
+  #ifdef CLICKER_MODE
+    if(isClickerActive){
+      activateClicker();
+    }
+  #endif
 }
 
 void Odbiornik::setRFaddress()
