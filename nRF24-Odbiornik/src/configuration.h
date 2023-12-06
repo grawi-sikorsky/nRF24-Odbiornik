@@ -47,7 +47,7 @@
 /********************************
 *  RELAYS MODE
 *********************************/
-#ifdef RELAYS_MODE
+// #ifdef RELAYS_MODE
     #ifdef DEBUGSERIAL
         #define RELAYS_COUNT 6
     #else
@@ -92,7 +92,7 @@
             DEFAULT_RELAY_8 \
         }
     #endif
-#endif
+// #endif
 /********************************
 *  CLICKER MODE
 *********************************/
