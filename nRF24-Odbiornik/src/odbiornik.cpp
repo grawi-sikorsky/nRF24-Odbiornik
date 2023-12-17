@@ -1,7 +1,6 @@
 #include "../src/odbiornik.h"
 #include "../src/outputs.h"
 #include "util.h"
-#include "odbiornik.h"
 
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
