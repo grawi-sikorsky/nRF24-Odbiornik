@@ -33,7 +33,9 @@ private:
 	bool prev_addr_State[3]; //, prev_addr2_State, prev_addr3_State;
 	bool inPin1_State, inPin1_prev_State;
 	bool isSettingsMode;
+
 	bool isClickerActive = false;
+	time_t clickerStartTime;
 
 public:
 	void initInRelaysMode();
@@ -66,7 +68,6 @@ public:
 	void activateClickerFromWireless();
 
 	void activateRelaysByEvoker(uint8_t evoker);
-	void activateClicker();
 
 	// Obsluga wejsc fizycznych w odbiorniku
 	void activateRelaysFromPhysical();
@@ -87,4 +88,12 @@ public:
 
 	void processSettings();
 
+	void updateClicker();
+
+    bool getClickerStartTime() const {
+        return clickerStartTime;
+    }
+    void setClickerStartTime(bool value) {
+        clickerStartTime = value;
+    }
 };

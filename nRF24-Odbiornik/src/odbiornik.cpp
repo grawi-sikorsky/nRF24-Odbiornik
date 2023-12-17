@@ -1,6 +1,7 @@
 #include "../src/odbiornik.h"
 #include "../src/outputs.h"
 #include "util.h"
+#include "odbiornik.h"
 
 extern RF24 radio; // CE, CSN
 extern WhistleData whistleData;
@@ -238,40 +239,50 @@ void Odbiornik::activateRelaysByEvoker(uint8_t evoker){
   }
 }
 
-void Odbiornik::activateClicker(){
+void Odbiornik::updateClicker(){
   #ifdef CLICKER_MODE
-    digitalWriteFast(FORWARD_PIN_A, LOW);
-    digitalWriteFast(BACKWARD_PIN_A, HIGH);
-    digitalWriteFast(FORWARD_PIN_B, LOW);
-    digitalWriteFast(BACKWARD_PIN_B, HIGH);
-    digitalWriteFast(FORWARD_PIN_C, LOW);
-    digitalWriteFast(BACKWARD_PIN_C, HIGH);
-    digitalWriteFast(FORWARD_PIN_D, LOW);
-    digitalWriteFast(BACKWARD_PIN_D, HIGH);
 
-    delay(OPEN_TIME);
+    if(isClickerActive){
 
-    digitalWriteFast(FORWARD_PIN_A, HIGH);
-    digitalWriteFast(BACKWARD_PIN_A, LOW);
-    digitalWriteFast(FORWARD_PIN_B, HIGH);
-    digitalWriteFast(BACKWARD_PIN_B, LOW);
-    digitalWriteFast(FORWARD_PIN_C, HIGH);
-    digitalWriteFast(BACKWARD_PIN_C, LOW);
-    digitalWriteFast(FORWARD_PIN_D, HIGH);
-    digitalWriteFast(BACKWARD_PIN_D, LOW);
+      unsigned long currentTime = millis();
 
-    delay(CLOSE_TIME);
+      if (currentTime - getClickerStartTime() < CLICKER_OPEN_TIME) {
+        // Set pins for the first movement
+        digitalWriteFast(FORWARD_PIN_A, LOW);
+        digitalWriteFast(BACKWARD_PIN_A, HIGH);
+        digitalWriteFast(FORWARD_PIN_B, LOW);
+        digitalWriteFast(BACKWARD_PIN_B, HIGH);
+        digitalWriteFast(FORWARD_PIN_C, LOW);
+        digitalWriteFast(BACKWARD_PIN_C, HIGH);
+        digitalWriteFast(FORWARD_PIN_D, LOW);
+        digitalWriteFast(BACKWARD_PIN_D, HIGH);
+      } else if (currentTime - getClickerStartTime() < 2 * CLICKER_OPEN_TIME) {
+        // Set pins for the second movement
+        digitalWriteFast(FORWARD_PIN_A, HIGH);
+        digitalWriteFast(BACKWARD_PIN_A, LOW);
+        digitalWriteFast(FORWARD_PIN_B, HIGH);
+        digitalWriteFast(BACKWARD_PIN_B, LOW);
+        digitalWriteFast(FORWARD_PIN_C, HIGH);
+        digitalWriteFast(BACKWARD_PIN_C, LOW);
+        digitalWriteFast(FORWARD_PIN_D, HIGH);
+        digitalWriteFast(BACKWARD_PIN_D, LOW);
+      } else {
+        // Disable movement by setting all pins to HIGH
+        digitalWriteFast(FORWARD_PIN_A, HIGH);
+        digitalWriteFast(BACKWARD_PIN_A, HIGH);
+        digitalWriteFast(FORWARD_PIN_B, HIGH);
+        digitalWriteFast(BACKWARD_PIN_B, HIGH);
+        digitalWriteFast(FORWARD_PIN_C, HIGH);
+        digitalWriteFast(BACKWARD_PIN_C, HIGH);
+        digitalWriteFast(FORWARD_PIN_D, HIGH);
+        digitalWriteFast(BACKWARD_PIN_D, HIGH);
 
-    digitalWriteFast(FORWARD_PIN_A, HIGH);
-    digitalWriteFast(BACKWARD_PIN_A, HIGH);
-    digitalWriteFast(FORWARD_PIN_B, HIGH);
-    digitalWriteFast(BACKWARD_PIN_B, HIGH);
-    digitalWriteFast(FORWARD_PIN_C, HIGH);
-    digitalWriteFast(BACKWARD_PIN_C, HIGH);
-    digitalWriteFast(FORWARD_PIN_D, HIGH);
-    digitalWriteFast(BACKWARD_PIN_D, HIGH);
+        // Reset movementStartTime and deactivate H-bridge
+        setClickerStartTime(0);
+        isClickerActive = false;
+      }
+    }
 
-    isClickerActive = false;
   #endif
 }
 
@@ -282,9 +293,8 @@ void Odbiornik::updateOutputs()
     outputs.updateTimeouts();
   #endif
   #ifdef CLICKER_MODE
-    if(isClickerActive){
-      activateClicker();
-    }
+    updateClicker();
+    this->setClickerStartTime(millis());
   #endif
 }
 
