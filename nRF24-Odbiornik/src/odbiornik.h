@@ -90,10 +90,10 @@ public:
 
 	void updateClicker();
 
-    bool getClickerStartTime() const {
+    time_t getClickerStartTime(){
         return clickerStartTime;
     }
-    void setClickerStartTime(bool value) {
+    void setClickerStartTime(time_t value) {
         clickerStartTime = value;
     }
 };

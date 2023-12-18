@@ -200,6 +200,7 @@ void Odbiornik::activateClickerFromWireless(){
   {
     if(!isClickerActive){
       isClickerActive = true;
+      this->setClickerStartTime(millis());
     }
   }
 }
@@ -293,7 +294,6 @@ void Odbiornik::updateOutputs()
   #endif
   #ifdef CLICKER_MODE
     updateClicker();
-    this->setClickerStartTime(millis());
   #endif
 }
 
