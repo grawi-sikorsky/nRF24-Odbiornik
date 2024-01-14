@@ -196,11 +196,18 @@ void Odbiornik::updateInputWireless()
 }
 
 void Odbiornik::activateClickerFromWireless(){
-  if(isWhistleSignal() || isWhistleButtonSignal() || isHelperSignal())
+  if(isWhistleSignal())
   {
-    if(!isClickerActive){
-      isClickerActive = true;
-      this->setClickerStartTime(millis());
+    if(!isClickerActiveWhistle){
+      isClickerActiveWhistle = true;
+      this->setClickerStartTimeWhistle(millis());
+    }
+  }
+  if(isWhistleButtonSignal() || isHelperSignal())
+  {
+    if(!isClickerActiveButton){
+      isClickerActiveButton = true;
+      this->setClickerStartTimeButton(millis());
     }
   }
 }
@@ -240,50 +247,77 @@ void Odbiornik::activateRelaysByEvoker(uint8_t evoker){
 }
 
 void Odbiornik::updateClicker(){
-  #ifdef CLICKER_MODE
+#ifdef CLICKER_MODE
 
-    if(isClickerActive){
+  if (isClickerActiveButton)
+  {
+    unsigned long currentTime = millis();
 
-      unsigned long currentTime = millis();
-
-      if (currentTime - getClickerStartTime() < CLICKER_OPEN_TIME) {
-        // Set pins for the first movement
-        digitalWriteFast(FORWARD_PIN_A, LOW);
-        digitalWriteFast(BACKWARD_PIN_A, HIGH);
-        digitalWriteFast(FORWARD_PIN_B, LOW);
-        digitalWriteFast(BACKWARD_PIN_B, HIGH);
-        digitalWriteFast(FORWARD_PIN_C, LOW);
-        digitalWriteFast(BACKWARD_PIN_C, HIGH);
-        digitalWriteFast(FORWARD_PIN_D, LOW);
-        digitalWriteFast(BACKWARD_PIN_D, HIGH);
-      } else if (currentTime - getClickerStartTime() < 2 * CLICKER_OPEN_TIME) {
-        // Set pins for the second movement
-        digitalWriteFast(FORWARD_PIN_A, HIGH);
-        digitalWriteFast(BACKWARD_PIN_A, LOW);
-        digitalWriteFast(FORWARD_PIN_B, HIGH);
-        digitalWriteFast(BACKWARD_PIN_B, LOW);
-        digitalWriteFast(FORWARD_PIN_C, HIGH);
-        digitalWriteFast(BACKWARD_PIN_C, LOW);
-        digitalWriteFast(FORWARD_PIN_D, HIGH);
-        digitalWriteFast(BACKWARD_PIN_D, LOW);
-      } else {
-        // Disable movement by setting all pins to HIGH
-        digitalWriteFast(FORWARD_PIN_A, HIGH);
-        digitalWriteFast(BACKWARD_PIN_A, HIGH);
-        digitalWriteFast(FORWARD_PIN_B, HIGH);
-        digitalWriteFast(BACKWARD_PIN_B, HIGH);
-        digitalWriteFast(FORWARD_PIN_C, HIGH);
-        digitalWriteFast(BACKWARD_PIN_C, HIGH);
-        digitalWriteFast(FORWARD_PIN_D, HIGH);
-        digitalWriteFast(BACKWARD_PIN_D, HIGH);
-
-        // Reset movementStartTime and deactivate H-bridge
-        setClickerStartTime(0);
-        isClickerActive = false;
-      }
+    if (currentTime - getClickerStartTimeButton() < CLICKER_OPEN_TIME)
+    {
+      // Set pins for the first movement
+      digitalWriteFast(FORWARD_PIN_A, LOW);
+      digitalWriteFast(BACKWARD_PIN_A, HIGH);
+      digitalWriteFast(FORWARD_PIN_B, LOW);
+      digitalWriteFast(BACKWARD_PIN_B, HIGH);
     }
+    else if (currentTime - getClickerStartTimeButton() < 2 * CLICKER_OPEN_TIME)
+    {
+      // Set pins for the second movement
+      digitalWriteFast(FORWARD_PIN_A, HIGH);
+      digitalWriteFast(BACKWARD_PIN_A, LOW);
+      digitalWriteFast(FORWARD_PIN_B, HIGH);
+      digitalWriteFast(BACKWARD_PIN_B, LOW);
+    }
+    else
+    {
+      // Disable movement by setting all pins to HIGH
+      digitalWriteFast(FORWARD_PIN_A, HIGH);
+      digitalWriteFast(BACKWARD_PIN_A, HIGH);
+      digitalWriteFast(FORWARD_PIN_B, HIGH);
+      digitalWriteFast(BACKWARD_PIN_B, HIGH);
 
-  #endif
+      // Reset movementStartTime and deactivate H-bridge
+      setClickerStartTimeButton(0);
+      isClickerActiveButton = false;
+    }
+  }
+  
+  if (isClickerActiveWhistle)
+  {
+    unsigned long currentTime = millis();
+
+    if (currentTime - getClickerStartTimeWhistle() < CLICKER_OPEN_TIME)
+    {
+      // Set pins for the first movement
+      digitalWriteFast(FORWARD_PIN_C, LOW);
+      digitalWriteFast(BACKWARD_PIN_C, HIGH);
+      digitalWriteFast(FORWARD_PIN_D, LOW);
+      digitalWriteFast(BACKWARD_PIN_D, HIGH);
+    }
+    else if (currentTime - getClickerStartTimeWhistle() < 2 * CLICKER_OPEN_TIME)
+    {
+      // Set pins for the second movement
+      digitalWriteFast(FORWARD_PIN_C, HIGH);
+      digitalWriteFast(BACKWARD_PIN_C, LOW);
+      digitalWriteFast(FORWARD_PIN_D, HIGH);
+      digitalWriteFast(BACKWARD_PIN_D, LOW);
+    }
+    else
+    {
+      // Disable movement by setting all pins to HIGH
+      digitalWriteFast(FORWARD_PIN_C, HIGH);
+      digitalWriteFast(BACKWARD_PIN_C, HIGH);
+      digitalWriteFast(FORWARD_PIN_D, HIGH);
+      digitalWriteFast(BACKWARD_PIN_D, HIGH);
+
+      // Reset movementStartTime and deactivate H-bridge
+      setClickerStartTimeWhistle(0);
+      isClickerActiveWhistle = false;
+    }
+  }
+
+#endif
 }
 
 void Odbiornik::updateOutputs()

@@ -34,8 +34,10 @@ private:
 	bool inPin1_State, inPin1_prev_State;
 	bool isSettingsMode;
 
-	bool isClickerActive = false;
-	time_t clickerStartTime;
+	bool isClickerActiveButton = false;
+	bool isClickerActiveWhistle = false;
+	time_t clickerStartTimeButton;
+	time_t clickerStartTimeWhistle;
 
 public:
 	void initInRelaysMode();
@@ -90,10 +92,16 @@ public:
 
 	void updateClicker();
 
-    time_t getClickerStartTime(){
-        return clickerStartTime;
+    time_t getClickerStartTimeButton(){
+        return clickerStartTimeButton;
     }
-    void setClickerStartTime(time_t value) {
-        clickerStartTime = value;
+    void setClickerStartTimeButton(time_t value) {
+        clickerStartTimeButton = value;
+    }
+	time_t getClickerStartTimeWhistle(){
+        return clickerStartTimeWhistle;
+    }
+    void setClickerStartTimeWhistle(time_t value) {
+        clickerStartTimeWhistle = value;
     }
 };
