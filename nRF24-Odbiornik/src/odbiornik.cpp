@@ -56,6 +56,11 @@ void Odbiornik::initInRelaysMode()
 
 void Odbiornik::initInClickerMode()
 {
+  pinModeFast(INPIN1, INPUT_PULLUP);
+  pinModeFast(ADDR1, INPUT_PULLUP);
+  pinModeFast(ADDR2, INPUT_PULLUP);
+  pinModeFast(ADDR3, INPUT_PULLUP);
+
   // PINS
   pinModeFast(OUTPIN0, OUTPUT);
   pinModeFast(OUTPIN1, OUTPUT);

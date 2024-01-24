@@ -112,6 +112,6 @@
     #define FORWARD_PIN_D         OUTPIN6
     #define BACKWARD_PIN_D        OUTPIN7
 
-    #define CLICKER_OPEN_TIME           500
-    #define CLICKER_CLOSE_TIME          500
+    #define CLICKER_OPEN_TIME           250
+    #define CLICKER_CLOSE_TIME          250
 #endif
